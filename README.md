@@ -2,32 +2,45 @@
 
 Personal configurations and preferences for AI developer tools including Claude Code, Copilot CLI, and others.
 
-## Installation Instructions
+## Installation Guide
 
-### Install AI Tools
+Refernce the [INSTALLATION.md](INSTALLATION.md) file for install general AI tools.
 
-```sh
-npm install -g @github/copilot @google/gemini-cli @openai/codex @upstash/context7-mcp
-```
+## Common AI Tools
 
-### Install Skills
+- Claude Code
+- Copilot CLI
+- VSCode Copilot Chat
 
-```sh
-npx skills add ycs77/skills -g -a claude-code -a github-copilot -s commit-message -y
-```
+## Configuration Files
 
-### Install Claude Code
+- [`.claude/settings.json`](.claude/settings.json): Configuration for Claude Code
 
-For Bash (Linux/macOS):
+## AI Workflow
 
-```sh
-curl -fsSL https://claude.ai/install.sh | bash
-```
+*Coming soon... Currently exploring the [Waza](https://github.com/tw93/Waza) workflow for AI development*
 
-For PowerShell (Windows):
+## Claude Code Plugins
 
-```sh
-irm https://claude.ai/install.ps1 | iex
-```
+- [ycs77/claude-code-plugins](https://github.com/ycs77/claude-code-plugins)
+  - ycs77
+- [ycs77/claude-code-notifications](https://github.com/ycs77/claude-code-notifications)
+  - notification-basic-win
+- [ycs77/claude-code-session-heartbeat](https://github.com/ycs77/claude-code-session-heartbeat)
 
-Next, set the `CLAUDE_CODE_GIT_BASH_PATH` environment variable to the location of your Git Bash executable, which is usually `C:\Program Files\git\bin\bash.exe`.
+## Skills
+
+| Name | Description |
+| ---- | ----------- |
+| [ycs77/skills](https://github.com/ycs77/skills) | Lucas Yang's curated agent skills |
+
+## MCP Server
+
+| Name | Use Case |
+| ---- | ----------- |
+| [apifable](https://github.com/ycs77/apifable) | Makes it easier to integrate backend APIs in frontend projects |
+
+## I want to learn more about...
+
+- [ ] Google Stitch
+- [ ] OpenClaw
