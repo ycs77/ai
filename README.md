@@ -1,4 +1,4 @@
-# Lucas's AI Configs
+# Lucas's AI dotfiles
 
 Personal configurations and preferences for AI developer tools including Claude Code, Copilot CLI, and others.
 
