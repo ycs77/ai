@@ -14,10 +14,10 @@ Refernce the [INSTALLATION.md](INSTALLATION.md) file for install general AI tool
 
 ## Skills
 
-- [ycs77/skills](https://github.com/ycs77/skills) - commit-message
-- [ycs77/skills](https://github.com/ycs77/skills) - github-release-notes
-- [ycs77/skills](https://github.com/ycs77/skills) - scan-repo (use in Container)
-- [ycs77/skills](https://github.com/ycs77/skills) - scan-skill (use in Container)
+- [commit-message](https://github.com/ycs77/skills/tree/main/skills/commit-message)
+- [github-release-notes](https://github.com/ycs77/skills/tree/main/skills/github-release-notes)
+- [scan-repo](https://github.com/ycs77/skills/tree/main/skills/scan-repo) - (use in Container)
+- [scan-skill](https://github.com/ycs77/skills/tree/main/skills/scan-skill) - (use in Container)
 
 Plan to add:
 
@@ -48,3 +48,7 @@ Plan to add:
 | Name |
 | ---- |
 | [ycs77/claude-code-session-heartbeat](https://github.com/ycs77/claude-code-session-heartbeat) |
+
+## Curated List
+
+Refernce the [CURATED_LIST.md](CURATED_LIST.md) file for curated list of AI tools and skills.
