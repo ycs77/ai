@@ -38,6 +38,14 @@
 
 - [Kami](https://github.com/tw93/Kami)
 
+### Automation
+
+- [OpenCLI](https://github.com/jackwener/OpenCLI)
+
 ### Docker & Container
 
 - [HolyClaude](https://github.com/ycs77/HolyClaude) - Lucas fork 的 HolyClaude 版本，用於在 Container 中讓 AI Agent 可以長期執行任務
+
+## Posts
+
+- [你不知道的 AI Coding：非技术人的上手、场景与实战](https://tw93.fun/2026-04-26/ai-coding.html)
