@@ -70,7 +70,8 @@ fi
 
 # Persist live rate_limits only when present (atomic write)
 if [ "${live_five_pct:-}" != "null" ] && [ -n "${live_five_pct:-}" ] && [ -n "$input" ]; then
-  mkdir -p "$CACHE_DIR"
+  mkdir -p "$CACHE_DIR" && chmod 700 "$CACHE_DIR"
+  umask 077
   printf '%s' "$input" | jq '{rate_limits: .rate_limits}' \
     > "${CACHE_FILE}.tmp" 2>/dev/null \
     && mv "${CACHE_FILE}.tmp" "$CACHE_FILE" 2>/dev/null \
@@ -120,7 +121,7 @@ elif [ "$ctx_pct" -ge 70 ] 2>/dev/null; then
 else
   ctx_color="$GREEN"
 fi
-context_part="${DIM}Context${RESET} ${ctx_color}${ctx_pct}%${RESET}"
+context_part="Context ${ctx_color}${ctx_pct}%${RESET}"
 
 # Usage color
 usage_color() {
@@ -136,9 +137,9 @@ if [ "$five_pct" != "null" ] && [ -n "$five_pct" ]; then
   color=$(usage_color "$five_pct")
   reset_str=$(format_reset "$five_reset")
   if [ -n "$reset_str" ]; then
-    five_part="${DIM}5h:${RESET} ${color}${five_pct}%${RESET} ${DIM}(${reset_str})${RESET}"
+    five_part="5h: ${color}${five_pct}%${RESET} (${reset_str})"
   else
-    five_part="${DIM}5h:${RESET} ${color}${five_pct}%${RESET}"
+    five_part="5h: ${color}${five_pct}%${RESET}"
   fi
 else
   five_part="${DIM}5h: --${RESET}"
@@ -149,9 +150,9 @@ if [ "$seven_pct" != "null" ] && [ -n "$seven_pct" ]; then
   color=$(usage_color "$seven_pct")
   reset_str=$(format_reset "$seven_reset")
   if [ -n "$reset_str" ]; then
-    seven_part="${DIM}7d:${RESET} ${color}${seven_pct}%${RESET} ${DIM}(${reset_str})${RESET}"
+    seven_part="7d: ${color}${seven_pct}%${RESET} (${reset_str})"
   else
-    seven_part="${DIM}7d:${RESET} ${color}${seven_pct}%${RESET}"
+    seven_part="7d: ${color}${seven_pct}%${RESET}"
   fi
 else
   seven_part="${DIM}7d: --${RESET}"
