@@ -26,10 +26,12 @@
 
 ### Write
 
+- [write](https://github.com/ycs77/skills/blob/main/skills/write/SKILL.md)
+
 ### Audit
 
-- [scan-repo](https://github.com/ycs77/skills/tree/main/skills/scan-repo)
-- [scan-skill](https://github.com/ycs77/skills/tree/main/skills/scan-skill)
+- [scan-repo](https://github.com/ycs77/skills/blob/main/skills/scan-repo/SKILL.md)
+- [scan-skill](https://github.com/ycs77/skills/blob/main/skills/scan-skill/SKILL.md)
 
 ### Present
 
