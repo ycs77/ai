@@ -14,7 +14,7 @@ npx skills add ycs77/skills -g \
   -a github-copilot \
   -s commit-message \
   -s github-release-notes \
-  -s write \
+  -s write-social-post \
   -y
 ```
 
