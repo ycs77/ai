@@ -87,7 +87,7 @@ RED="\033[31m"
 BLUE="\033[94m"
 MAGENTA="\033[95m"
 
-# Format seconds remaining as "4h23m" or "1d21h"
+# Format reset time as "HH:MM, 4h23m" (clock time + remaining)
 format_reset() {
   local ts="$1"
   [ -z "$ts" ] && return
@@ -97,15 +97,31 @@ format_reset() {
   now=$(date +%s)
   diff=$((epoch - now))
   [ "$diff" -le 0 ] && return
+  local today target clock_fmt="+%H:%M"
+  today=$(date +%Y%m%d)
+  target=$(date -d "@$epoch" +%Y%m%d 2>/dev/null \
+    || date -r "$epoch" +%Y%m%d 2>/dev/null)
+  if [ -n "$target" ] && [ "$target" != "$today" ]; then
+    clock_fmt="+%m/%d %H:%M"
+  fi
+  local clock=""
+  clock=$(date -d "@$epoch" "$clock_fmt" 2>/dev/null \
+    || date -r "$epoch" "$clock_fmt" 2>/dev/null)
   local mins=$(( diff / 60 ))
   local hours=$(( mins / 60 ))
   local days=$(( hours / 24 ))
+  local remaining=""
   if [ "$days" -ge 1 ]; then
-    printf "%dd%dh" "$days" $(( hours % 24 ))
+    remaining=$(printf "%dd%dh" "$days" $(( hours % 24 )))
   elif [ "$hours" -ge 1 ]; then
-    printf "%dh%dm" "$hours" $(( mins % 60 ))
+    remaining=$(printf "%dh%dm" "$hours" $(( mins % 60 )))
   else
-    printf "%dm" "$mins"
+    remaining=$(printf "%dm" "$mins")
+  fi
+  if [ -n "$clock" ]; then
+    printf "%s, %s" "$clock" "$remaining"
+  else
+    printf "%s" "$remaining"
   fi
 }
 
