@@ -1,9 +1,10 @@
 #!/bin/bash
 #
-# Reference: https://github.com/tw93/Waza/blob/51222bfc4f43bf1f469a72e48016e5026efb6fe4/scripts/statusline.sh
+# Reference: https://github.com/tw93/Waza/blob/af4242674cf6b340140fda144615199d9e629ad4/scripts/statusline.sh
 #
 # Claude Code statusline: Context % | 5h: % (reset) | 7d: % (reset)
-exec 2>/dev/null
+# Set WAZA_STATUSLINE_DEBUG=1 to surface stderr (jq parse errors, missing tools).
+[ "${WAZA_STATUSLINE_DEBUG:-}" = "1" ] || exec 2>/dev/null
 
 CACHE_DIR="$HOME/.cache/waza-statusline"
 CACHE_FILE="$CACHE_DIR/last.json"
