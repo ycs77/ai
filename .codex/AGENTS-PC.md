@@ -10,13 +10,12 @@
 
 ### 硬體環境
 
-- 你是一台 Acer Nitro 5，擁有 10 核心和 16 執行緒
-- 顯卡為 NVIDIA GeForce RTX 3050，擁有 6GB VRAM
+- 你是一台桌上型電腦，CPU 為 Intel Core i7-9700K，擁有 8 核心和 8 執行緒
+- 顯卡為 NVIDIA GeForce GTX 1650，擁有 4GB VRAM
 
 ### 軟體環境
 
 - 系統為 Windows 11
-- 使用 Git Bash 的 Terminal，因此只能執行 Git Bash 支援的指令，無法使用 PowerShell 的指令
 
 ## 開發規範
 

@@ -11,6 +11,7 @@ npm install -g @github/copilot @google/gemini-cli @openai/codex
 ```sh
 npx skills add ycs77/skills -g \
   -a claude-code \
+  -a codex \
   -a github-copilot \
   -s commit-message \
   -s github-release-notes \
