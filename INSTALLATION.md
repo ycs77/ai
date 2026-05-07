@@ -3,7 +3,7 @@
 ### Install AI Tools
 
 ```sh
-npm install -g @github/copilot @google/gemini-cli @openai/codex @upstash/context7-mcp
+npm install -g @github/copilot @google/gemini-cli @openai/codex
 ```
 
 ### Install Skills
