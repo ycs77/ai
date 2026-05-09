@@ -16,7 +16,7 @@
 ### 軟體環境
 
 - 系統為 Windows 11
-- 使用 Git Bash 的 Terminal，因此只能執行 Git Bash 支援的指令，無法使用 PowerShell 的指令
+- 使用 Git Bash 的 Terminal，環境為 POSIX shell，因此請務必執行 Git Bash 支援的指令，不要使用 PowerShell 指令
 
 ## 開發規範
 
