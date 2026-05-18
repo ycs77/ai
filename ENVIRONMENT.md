@@ -2,11 +2,20 @@
 
 ## Editor
 
-Set the default CLI editor to VSCode:
+Set the default CLI editor to VSCode.
+
+Windows PowerShell:
 
 ```powershell
 setx VISUAL "code --wait"
 setx EDITOR "code --wait"
+```
+
+Linux/macOS Bash (add to `~/.bashrc` or `~/.zshrc`):
+
+```bash
+export VISUAL="code --wait"
+export EDITOR="code --wait"
 ```
 
 - `VISUAL`: Preferred full-screen or graphical editor.
