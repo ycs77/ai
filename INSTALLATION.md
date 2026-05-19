@@ -2,13 +2,13 @@
 
 ### Install AI Tools
 
-```sh
+```bash
 npm install -g @github/copilot @google/gemini-cli @openai/codex
 ```
 
 ### Install Skills
 
-```sh
+```bash
 npx skills add ycs77/skills -g \
   -a claude-code \
   -a codex \
@@ -23,13 +23,13 @@ npx skills add ycs77/skills -g \
 
 For Bash (Linux/macOS):
 
-```sh
+```bash
 curl -fsSL https://claude.ai/install.sh | bash
 ```
 
 For PowerShell (Windows):
 
-```sh
+```powershell
 irm https://claude.ai/install.ps1 | iex
 ```
 
