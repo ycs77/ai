@@ -9,13 +9,11 @@ npm install -g @github/copilot@latest @google/gemini-cli@latest @openai/codex@la
 ### Install Skills
 
 ```bash
-npx skills add ycs77/skills -g \
+npx -y skills add ycs77/skills -g \
   -a claude-code \
   -a codex \
   -a github-copilot \
-  -s commit-message \
-  -s github-release-notes \
-  -s write-social-post \
+  -s '*' \
   -y
 ```
 
