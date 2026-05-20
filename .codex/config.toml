@@ -1,5 +1,0 @@
-sandbox_mode = "danger-full-access"
-approval_policy = "untrusted"
-
-[windows]
-sandbox = "elevated"
