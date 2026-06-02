@@ -3,7 +3,7 @@
 ### Install AI Tools
 
 ```bash
-npm install -g @github/copilot@latest @google/gemini-cli@latest @openai/codex@latest
+npm install -g @github/copilot@latest @openai/codex@latest
 ```
 
 ### Install Skills
