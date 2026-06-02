@@ -9,8 +9,9 @@ Refernce the [INSTALLATION.md](INSTALLATION.md) file for install general AI tool
 ## Common AI Tools
 
 - Claude Code
+- Codex CLI
 - Copilot CLI
-- VSCode Copilot Chat
+- VSCode Copilot
 
 ## Skills
 
