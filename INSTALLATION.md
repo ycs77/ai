@@ -15,6 +15,8 @@ npx -y skills add ycs77/skills -g \
   -a github-copilot \
   -s '*' \
   -y
+
+ln -sfn ../.agents/skills ~/.gemini/skills
 ```
 
 ### Install Claude Code
