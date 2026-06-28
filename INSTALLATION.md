@@ -61,3 +61,22 @@ Then, add the following Claude Code configuration to display the status line:
   }
 }
 ```
+
+### Setup Claude Code Sandbox
+
+Enable the sandbox feature in Claude Code settings:
+
+```json
+{
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "excludedCommands": [
+      "git",
+      "docker",
+      "npm",
+      "pip"
+    ]
+  }
+}
+```
