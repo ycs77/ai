@@ -63,6 +63,9 @@
       "Read(**/*.key)"
     ]
   },
+  "autoUpdatesChannel": "stable",
   "autoMemoryEnabled": false,
-  "autoUpdatesChannel": "stable"
+  "model": "opus",
+  "outputStyle": "Iroha",
+  "tui": "default"
 }
