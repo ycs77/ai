@@ -75,6 +75,8 @@ Enable the sandbox feature in Claude Code settings:
       "git",
       "docker",
       "npm",
+      "yarn",
+      "pnpm",
       "pip"
     ]
   }
