@@ -16,6 +16,7 @@ npx -y skills add ycs77/skills -g \
   -s '*' \
   -y
 
+rm -rf ~/.gemini/skills
 ln -sfn ../.agents/skills ~/.gemini/skills
 ```
 
