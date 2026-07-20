@@ -1,6 +1,6 @@
 # Lucas's AI dotfiles
 
-Personal configurations and preferences for AI developer tools including Claude Code, Copilot CLI, and others.
+Personal configurations and preferences for AI developer tools.
 
 ## Installation Guide
 
@@ -10,8 +10,7 @@ Refernce the [INSTALLATION.md](INSTALLATION.md) file for install general AI tool
 
 - Claude Code
 - Codex CLI
-- Copilot CLI
-- VSCode Copilot
+- OpenCode
 
 ## Skills
 
@@ -19,12 +18,6 @@ Refernce the [INSTALLATION.md](INSTALLATION.md) file for install general AI tool
 - [github-release-notes](https://github.com/ycs77/skills/tree/main/skills/github-release-notes)
 - [scan-repo](https://github.com/ycs77/skills/tree/main/skills/scan-repo) - (use in Container)
 - [scan-skill](https://github.com/ycs77/skills/tree/main/skills/scan-skill) - (use in Container)
-
-Plan to add:
-
-- think
-- design
-- check
 
 ## MCP Server
 
@@ -49,6 +42,11 @@ Plan to add:
 | Name |
 | ---- |
 | [ycs77/claude-code-session-heartbeat](https://github.com/ycs77/claude-code-session-heartbeat) |
+
+## OpenCode
+
+- [`.config/opencode/opencode.jsonc`](.config/opencode/opencode.jsonc) - Configuration for OpenCode
+- [`.config/opencode/tui.json`](.config/opencode/tui.json) - Configuration for OpenCode TUI
 
 ## Curated List
 
