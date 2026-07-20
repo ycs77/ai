@@ -22,5 +22,62 @@
         "deepseek-v4-flash"
       ]
     }
+  },
+
+  // Permissions
+  "permission": {
+    "read": {
+      "*": "allow",
+      // .env files
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow",
+      // Secrets
+      "**/secrets/**": "deny",
+      "**/appsettings.json": "deny",
+      "**/*credential*": "deny",
+      "**/*secret*": "deny",
+      "**/*token*": "deny",
+      "**/.aws/**": "deny",
+      "**/.ssh/**": "deny",
+      "*.pem": "deny",
+      "*.key": "deny",
+      "*.crt": "deny"
+    },
+    "edit": {
+      "*": "allow",
+      // .env files
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow",
+      // Secrets
+      "**/secrets/**": "deny",
+      "**/appsettings.json": "deny",
+      "**/*credential*": "deny",
+      "**/*secret*": "deny",
+      "**/*token*": "deny",
+      "**/.aws/**": "deny",
+      "**/.ssh/**": "deny",
+      "*.pem": "deny",
+      "*.key": "deny",
+      "*.crt": "deny"
+    },
+    "bash": {
+      "*": "ask",
+      // Environment
+      "env": "deny",
+      "printenv": "deny",
+      "cat *env*": "deny",
+      // Git
+      "git *": "allow",
+      "git commit *": "ask",
+      "git push *": "ask",
+      // Node.js
+      "npm *": "allow",
+      "yarn *": "allow",
+      "pnpm *": "allow",
+      // PHP
+      "composer *": "allow"
+    }
   }
 }
