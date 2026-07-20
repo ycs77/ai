@@ -1,5 +1,26 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode-go/minimax-m3",
-  "small_model": "opencode-go/deepseek-v4-flash"
+
+  // Models
+  "model": "opencode-go/glm-5.2",
+  "small_model": "opencode-go/deepseek-v4-flash",
+  "provider": {
+    "opencode-go": {
+      "whitelist": [
+        // S Tier
+        "glm-5.2",
+        "kimi-k3",
+        "qwen3.7-max",
+
+        // A Tier
+        "kimi-k2.7-code",
+        "glm-5.1",
+        "minimax-m3",
+        "qwen3.7-plus",
+
+        // C Tier
+        "deepseek-v4-flash"
+      ]
+    }
+  }
 }
