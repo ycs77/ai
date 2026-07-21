@@ -28,10 +28,12 @@
   "permission": {
     "read": {
       "*": "allow",
+
       // .env files
       "*.env": "deny",
       "*.env.*": "deny",
       "*.env.example": "allow",
+
       // Secrets
       "**/secrets/**": "deny",
       "**/appsettings.json": "deny",
@@ -44,12 +46,15 @@
       "*.key": "deny",
       "*.crt": "deny"
     },
+
     "edit": {
       "*": "allow",
+
       // .env files
       "*.env": "deny",
       "*.env.*": "deny",
       "*.env.example": "allow",
+
       // Secrets
       "**/secrets/**": "deny",
       "**/appsettings.json": "deny",
@@ -62,12 +67,26 @@
       "*.key": "deny",
       "*.crt": "deny"
     },
+
     "bash": {
       "*": "ask",
+
       // Environment
       "env": "deny",
       "printenv": "deny",
       "cat *env*": "deny",
+      "cat .env.example": "allow",
+
+      // Shell output
+      // DO NOT allow echo; let Agent respond with text directly
+      "echo*": "ask",
+
+      // File system operations
+      "pwd": "allow",
+      "ls*": "allow",
+      // DO NOT allow cat; use the Read tool for file contents
+      "cat*": "ask",
+
       // Git
       "git *": "allow",
       "git commit *": "ask",
@@ -85,10 +104,12 @@
           "git *": "allow",
           "git commit *": "ask",
           "git push *": "ask",
+
           // Node.js
           "npm *": "allow",
           "yarn *": "allow",
           "pnpm *": "allow",
+
           // PHP
           "composer *": "allow"
         }
