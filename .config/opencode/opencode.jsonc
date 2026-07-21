@@ -87,10 +87,29 @@
       // DO NOT allow cat; use the Read tool for file contents
       "cat*": "ask",
 
+      // Locate executables
+      "which*": "allow",
+      "where*": "allow",
+
       // Git
       "git *": "allow",
       "git commit *": "ask",
-      "git push *": "ask"
+      "git push *": "ask",
+
+      // Version checks
+      "node --version": "allow",
+      "node -v": "allow",
+      "npm --version": "allow",
+      "npm -v": "allow",
+      "php --version": "allow",
+      "php -v": "allow",
+      "python --version": "allow",
+      "python3 --version": "allow",
+      "uv --version": "allow",
+      "composer --version": "allow",
+      "docker --version": "allow",
+      "git --version": "allow",
+      "gh --version": "allow"
     }
   },
 
@@ -111,7 +130,8 @@
           "pnpm *": "allow",
 
           // PHP
-          "composer *": "allow"
+          "composer *": "allow",
+          "php artisan *": "allow"
         }
       }
     }
