@@ -71,13 +71,28 @@
       // Git
       "git *": "allow",
       "git commit *": "ask",
-      "git push *": "ask",
-      // Node.js
-      "npm *": "allow",
-      "yarn *": "allow",
-      "pnpm *": "allow",
-      // PHP
-      "composer *": "allow"
+      "git push *": "ask"
+    }
+  },
+
+  // Agents
+  "agent": {
+    "build": {
+      // Build agent permissions
+      "permission": {
+        "bash": {
+          // Git
+          "git *": "allow",
+          "git commit *": "ask",
+          "git push *": "ask",
+          // Node.js
+          "npm *": "allow",
+          "yarn *": "allow",
+          "pnpm *": "allow",
+          // PHP
+          "composer *": "allow"
+        }
+      }
     }
   }
 }
