@@ -87,6 +87,11 @@
       // DO NOT allow cat; use the Read tool for file contents
       "cat*": "ask",
 
+      // Search tools (read-only by default; deny mutating flags)
+      "rg *": "allow",
+      "rg * --replace*": "ask",
+      "rg * -R*": "ask",
+
       // Locate executables
       "which*": "allow",
       "where*": "allow",
