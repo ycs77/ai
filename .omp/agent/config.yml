@@ -1,0 +1,12 @@
+setupVersion: 1
+
+# Basic
+providers:
+  webSearch: duckduckgo
+modelRoles:
+  default: opencode-go/glm-5.2
+symbolPreset: unicode
+
+# Theme
+theme:
+  dark: titanium
