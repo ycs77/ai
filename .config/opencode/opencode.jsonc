@@ -69,76 +69,110 @@
     },
 
     "bash": {
-      "*": "ask",
+      "*": "allow",
 
-      // Environment
+      // Secrets & environment
       "env": "deny",
       "printenv": "deny",
       "cat *env*": "deny",
       "cat .env.example": "allow",
 
-      // Shell output
-      // DO NOT allow echo; let Agent respond with text directly
+      // Shell output & file read — route to proper tools
       "echo*": "ask",
-
-      // File system operations
-      "pwd": "allow",
-      "ls*": "allow",
-      // DO NOT allow cat; use the Read tool for file contents
       "cat*": "ask",
 
-      // Search tools (read-only by default; deny mutating flags)
-      "rg *": "allow",
-      "rg * --replace*": "ask",
-      "rg * -R*": "ask",
+      // Deletion (all shells)
+      "rm -rf /": "deny",
+      "rm*": "ask",
+      "*rmdir*": "ask",
+      "unlink*": "ask",
+      "*Remove-Item*": "ask",
+      "del*": "ask",
+      "erase*": "ask",
+      "cmd /c *del*": "ask",
+      "cmd /c *erase*": "ask",
+      "find * -delete*": "ask",
 
-      // Locate executables
-      "which*": "allow",
-      "where*": "allow",
+      // Disk-level destruction
+      "format*": "deny",
+      "diskpart*": "deny",
+      "dd*": "deny",
+      "mkfs*": "deny",
 
-      // Git
-      "git *": "allow",
+      // System power
+      "shutdown*": "deny",
+      "reboot*": "deny",
+      "halt*": "deny",
+
+      // Registry
+      "reg delete*": "deny",
+
+      // Process kill (unsaved state loss)
+      "taskkill*": "ask",
+      "kill*": "ask",
+
+      // File overwrite / remote transfer
+      "mv -f*": "ask",
+      "mv --force*": "ask",
+      "scp*": "ask",
+      "rsync*": "ask",
+      "ssh*": "ask",
+
+      // System ownership / permissions
+      "icacls*": "ask",
+      "takeown*": "ask",
+      "chmod*": "ask",
+      "chown*": "ask",
+
+      // Git: destructive / external
       "git commit *": "ask",
       "git push *": "ask",
+      "git push --force*": "ask",
+      "git push -f *": "ask",
+      "git reset --hard*": "ask",
+      "git clean*": "ask",
+      "git rebase*": "ask",
+      "git checkout -- *": "ask",
+      "git checkout .": "ask",
+      "git stash drop*": "ask",
+      "git branch -D*": "ask",
 
-      // Version checks
-      "node --version": "allow",
-      "node -v": "allow",
-      "npm --version": "allow",
-      "npm -v": "allow",
-      "php --version": "allow",
-      "php -v": "allow",
-      "python --version": "allow",
-      "python3 --version": "allow",
-      "uv --version": "allow",
-      "composer --version": "allow",
-      "docker --version": "allow",
-      "git --version": "allow",
-      "gh --version": "allow"
-    }
-  },
+      // Package install / remove (supply-chain risk)
+      "npm install*": "ask",
+      "npm i *": "ask",
+      "npm ci*": "ask",
+      "npm uninstall*": "ask",
+      "npm rm *": "ask",
+      "yarn": "ask",
+      "yarn install*": "ask",
+      "yarn add*": "ask",
+      "pnpm install*": "ask",
+      "pnpm i *": "ask",
+      "pnpm uninstall*": "ask",
+      "pip install*": "ask",
+      "pip3 install*": "ask",
+      "uv add*": "ask",
+      "uv pip install*": "ask",
+      "composer require*": "ask",
+      "composer install*": "ask",
+      "composer update*": "ask",
 
-  // Agents
-  "agent": {
-    "build": {
-      // Build agent permissions
-      "permission": {
-        "bash": {
-          // Git
-          "git *": "allow",
-          "git commit *": "ask",
-          "git push *": "ask",
+      // Publish (irreversible public release)
+      "npm publish*": "deny",
+      "yarn publish*": "deny",
+      "pnpm publish*": "deny",
 
-          // Node.js
-          "npm *": "allow",
-          "yarn *": "allow",
-          "pnpm *": "allow",
+      // Pipe-to-shell remote execution
+      "curl *|*sh*": "ask",
+      "curl *|*bash*": "ask",
+      "wget *|*sh*": "ask",
+      "wget *|*bash*": "ask",
 
-          // PHP
-          "composer *": "allow",
-          "php artisan *": "allow"
-        }
-      }
+      // Docker: data loss
+      "docker system prune*": "ask",
+      "docker volume rm*": "ask",
+      "docker rmi*": "ask",
+      "docker rm*": "ask"
     }
   }
 }
