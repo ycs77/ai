@@ -1,8 +1,6 @@
 setupVersion: 1
 
 # Basic
-providers:
-  webSearch: duckduckgo
 modelRoles:
   default: opencode-go/glm-5.2
 symbolPreset: unicode
@@ -10,3 +8,225 @@ symbolPreset: unicode
 # Theme
 theme:
   dark: titanium
+  light: light
+
+# Tools Approval
+# write = auto-approve read/write tiers; exec requires prompt
+# CRITICAL_BASH_PATTERNS (built-in) covers dangerous commands not listed here
+tools:
+  approvalMode: write
+
+bash:
+  patterns:
+    # Deny: Secrets & environment exposure
+    - match: "env"
+      approval: deny
+    - match: "printenv"
+      approval: deny
+    # .env.example explicitly allowed before the broader deny
+    - match: "cat .env.example"
+      approval: allow
+    - match: "cat *env*"
+      approval: deny
+
+    # Deny: Disk-level destruction
+    - match: "rm -rf /"
+      approval: deny
+    - match: "format*"
+      approval: deny
+    - match: "diskpart*"
+      approval: deny
+    - match: "dd*"
+      approval: deny
+    - match: "mkfs*"
+      approval: deny
+    - match: "sudo rm*"
+      approval: deny
+    - match: "*chmod -R* /"
+      approval: deny
+    - match: "*chown -R* /"
+      approval: deny
+    - match: "*> /dev/sd*"
+      approval: deny
+    - match: "*shred /dev/*"
+      approval: deny
+    - match: "*cryptsetup*"
+      approval: deny
+    - match: ":()*"
+      approval: deny
+
+    # Deny: System power control
+    - match: "shutdown*"
+      approval: deny
+    - match: "reboot*"
+      approval: deny
+    - match: "halt*"
+      approval: deny
+    - match: "poweroff*"
+      approval: deny
+    - match: "init 0"
+      approval: deny
+    - match: "kill -9 1*"
+      approval: deny
+
+    # Deny: System config destruction
+    - match: "*> /etc/passwd*"
+      approval: deny
+    - match: "*> /etc/shadow*"
+      approval: deny
+    - match: "*> /etc/sudoers*"
+      approval: deny
+    - match: "*|*tee* /etc/passwd*"
+      approval: deny
+    - match: "*|*tee* /etc/shadow*"
+      approval: deny
+    - match: "*|*tee* /etc/sudoers*"
+      approval: deny
+
+    # Deny: Registry deletion
+    - match: "reg delete*"
+      approval: deny
+
+    # Deny: Public package publish (irreversible)
+    - match: "npm publish*"
+      approval: deny
+    - match: "yarn publish*"
+      approval: deny
+    - match: "pnpm publish*"
+      approval: deny
+
+    # Deny: Network exfil
+    - match: "nc *-e *"
+      approval: deny
+    - match: "nc *-c *"
+      approval: deny
+
+    # Ask: Shell output & file read (catches pipe edge cases)
+    - match: "echo*"
+      approval: prompt
+    - match: "cat*"
+      approval: prompt
+
+    # Ask: Deletion (all shells)
+    - match: "rm -rf*"
+      approval: prompt
+    - match: "rm -r*"
+      approval: prompt
+    - match: "rm -f*"
+      approval: prompt
+    - match: "*rmdir*"
+      approval: prompt
+    - match: "unlink*"
+      approval: prompt
+    - match: "*Remove-Item*"
+      approval: prompt
+    - match: "del*"
+      approval: prompt
+    - match: "erase*"
+      approval: prompt
+    - match: "cmd /c *del*"
+      approval: prompt
+    - match: "cmd /c *erase*"
+      approval: prompt
+    - match: "find * -delete*"
+      approval: prompt
+
+    # Ask: Process kill
+    - match: "taskkill*"
+      approval: prompt
+    - match: "kill*"
+      approval: prompt
+
+    # Ask: File overwrite / remote transfer
+    - match: "mv -f*"
+      approval: prompt
+    - match: "mv --force*"
+      approval: prompt
+    - match: "scp*"
+      approval: prompt
+    - match: "rsync*"
+      approval: prompt
+    - match: "ssh*"
+      approval: prompt
+
+    # Ask: System ownership / permissions
+    - match: "icacls*"
+      approval: prompt
+    - match: "takeown*"
+      approval: prompt
+    - match: "chmod -R*"
+      approval: prompt
+    - match: "chown -R*"
+      approval: prompt
+
+    # Ask: Git destructive / external
+    - match: "git commit *"
+      approval: prompt
+    - match: "git push *"
+      approval: prompt
+    - match: "git reset --hard*"
+      approval: prompt
+    - match: "git clean*"
+      approval: prompt
+    - match: "git rebase*"
+      approval: prompt
+    - match: "git checkout -- *"
+      approval: prompt
+    - match: "git checkout ."
+      approval: prompt
+    - match: "git stash drop*"
+      approval: prompt
+    - match: "git branch -D*"
+      approval: prompt
+
+    # Ask: Package install / remove (supply-chain risk)
+    - match: "npm install*"
+      approval: prompt
+    - match: "npm i *"
+      approval: prompt
+    - match: "npm ci*"
+      approval: prompt
+    - match: "npm uninstall*"
+      approval: prompt
+    - match: "npm rm *"
+      approval: prompt
+    - match: "yarn"
+      approval: prompt
+    - match: "yarn install*"
+      approval: prompt
+    - match: "yarn add*"
+      approval: prompt
+    - match: "pnpm install*"
+      approval: prompt
+    - match: "pnpm i *"
+      approval: prompt
+    - match: "pnpm uninstall*"
+      approval: prompt
+    - match: "pip install*"
+      approval: prompt
+    - match: "pip3 install*"
+      approval: prompt
+    - match: "uv add*"
+      approval: prompt
+    - match: "uv pip install*"
+      approval: prompt
+    - match: "composer require*"
+      approval: prompt
+    - match: "composer install*"
+      approval: prompt
+    - match: "composer update*"
+      approval: prompt
+
+    # Ask: Docker data loss
+    - match: "docker system prune*"
+      approval: prompt
+    - match: "docker volume rm*"
+      approval: prompt
+    - match: "docker rmi*"
+      approval: prompt
+    - match: "docker rm*"
+      approval: prompt
+
+    # Catch-all: allow everything else (first-match wins, must be last)
+    - match: "*"
+      approval: allow
