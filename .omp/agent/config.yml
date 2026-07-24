@@ -19,6 +19,8 @@ tools:
 bash:
   patterns:
     # Deny: Secrets & environment exposure
+    # Supplemental only: broad cross-tool/Shell protected-path checks run in
+    # hooks/pre/permission-guard.ts before these first-match patterns.
     - match: "env"
       approval: deny
     - match: "printenv"

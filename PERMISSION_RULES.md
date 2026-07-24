@@ -54,3 +54,45 @@ No legitimate dev scenario needs these. Asking only adds fatigue. Deny is struct
 - **Allow-skip mechanism**: commands containing shell-control chars (`|`, `>`, `$()`, etc.) skip `approval: allow` rules and fall to bare exec tier — in write mode this triggers an extra prompt, forming a guard net for piped/redirected commands.
 - **First-match semantics**: deny rules sit before prompt rules; catch-all `*` → allow must be last. `.env.example` must be explicitly allowed before the broader `cat *env*` → deny.
 - **Linux patterns retained on Windows**: `/etc/passwd`, `/dev/sd*`, `init 0`, etc. don't exist on Windows but AI may run them via SSH/WSL/Docker — kept consistent with `rm -rf /` → deny.
+- **Bash interceptor boundary**: `bashInterceptor.enabled` defaults to `false`, and its rules redirect common shell operations to dedicated tools only when enabled. Protected-path enforcement does not depend on it.
+
+### Protected path policy
+
+`.omp/agent/hooks/pre/permission-guard.ts` is the primary protected-path boundary. `read`, `write`, `grep`, `edit`, and `bash` all use its single ordered `FILE_RULES` policy. The YAML Bash patterns are supplemental defense only.
+
+- `read` and `write` inspect every path input. `grep` accepts both `path` and `paths`, including string arrays and comma/semicolon-delimited values. `edit` inspects every `[PATH#TAG]` section.
+- Rules use first-match semantics for each candidate. The completed candidate decisions are then aggregated for the whole tool call with `deny > prompt > allow` precedence. A basename exactly equal to `.env.example` is allowed, but it never exempts another candidate in the same call.
+- Local relative paths are evaluated in their original normalized form, after resolution against the effective working directory, and against that working directory itself. This prevents `..` or a protected working directory from hiding `secrets`, `.aws`, `.ssh`, or `.ss`.
+- Protected extensions (`.env`, `.pem`, `.key`, and `.crt`) are matched case-insensitively. The ordered `.env.example` allow rule remains the exact exception.
+- Denial and confirmation messages identify only the matched policy or unsupported syntax. They never echo a complete command, candidate path, `env` object, or environment value.
+
+#### Protocol handling
+
+| Protocol class | Behavior |
+|---|---|
+| Local paths and `file://` | Convert to a filesystem path, normalize, then check |
+| `ssh://` | Decode and check the remote absolute URL path; the SSH handler does not expand `~` |
+| `vault://` | Decode and check the vault-relative path; the handler itself confines access to an Obsidian vault root |
+| `http://`, `https://` | Skip filesystem-path policy |
+| Confirmed virtual/internal URIs (`agent://`, `artifact://`, `history://`, `issue://`, `local://`, `mcp://`, `memory://`, `omp://`, `pr://`, `rule://`, `skill://`, `xd://`) | Skip filesystem-path policy |
+| Unknown protocols | Deny; never default-allow |
+
+#### Shell handling
+
+- Checks `command`, the effective `cwd`, and every value in the caller-supplied `env` object. It never reads or expands host environment variables.
+- The tokenizer covers quoted and unquoted arguments, pipelines, redirects, and multiple commands. Direct path extraction supports common Bash (`cat`, `grep`, `sed`, `tee`, `cp`, `mv`, `rm`), PowerShell (`Get-Content`, `Set-Content`, `Out-File`, `Copy-Item`, `Remove-Item`), and cmd (`type`, `copy`, `move`, `del`) forms.
+- Wrapper commands (`sudo`, `command`, and `builtin`), their options, and leading environment assignments are resolved before direct-path and unsupported-execution checks.
+- Variables, command substitution, unbalanced quotes, encoded commands, nested shell command strings, and other unsupported dynamic execution produce a prompt decision. All candidates are evaluated before enforcement, so a literal deny always wins; otherwise one confirmation is shown per tool call when UI is available, and headless/no-UI calls fail closed.
+- The tokenizer is intentionally conservative: uncertain input may be blocked or prompted even when it would be harmless.
+
+#### Cross-tool behavior
+
+- YAML globs cannot reliably understand pipe and redirect combinations. The pre-hook tokenizes common direct forms; workspace isolation and OS-level guards remain necessary for airtight enforcement.
+- The YAML matcher sees command text, while the pre-hook evaluates extracted candidates. Keep the pre-hook as the protected-path authority.
+
+#### Known limits
+
+- This is not a complete Bash, PowerShell, or cmd parser, an OS sandbox, or a replacement for filesystem permissions/process isolation.
+- It does not attempt to defeat arbitrary encoding, multi-stage expansion, intentional obfuscation, or a general-purpose program that opens files itself.
+- It does not inspect the returned contents of virtual/internal URIs.
+- Archive, SQLite, and selector semantics remain owned by their tools; the hook only removes recognized read selectors before checking the candidate path.
