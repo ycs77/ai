@@ -85,6 +85,7 @@ test('dedicated tools share protected-path policy across path shapes', async () 
   await assertBlocked('grep', { paths: ['src', '.aws/credentials'] }, ['.aws/credentials'])
   await assertBlocked('grep', { path: ['src', 'secrets/app.json'] }, ['secrets/app.json'])
   await assertBlocked('grep', { paths: '.env.example; .ssh/config' }, ['.ssh/config'])
+  await assertBlocked('grep', { path: '.env;src' }, ['.env;src'])
   await assertBlocked('edit', {
     input: '[src/app.ts#ABCD]\nINS.TAIL:\n+ok\n[secrets/app.json#1234]\nDEL 1',
   }, ['secrets/app.json'])
@@ -183,12 +184,28 @@ test('shell direct syntax checks arguments, redirects, cwd, and explicit env', a
 
   await assertAllowed('bash', { command: 'cat .env.example' })
   await assertBlocked('bash', { command: 'grep password .env' }, ['grep password .env'])
-  await assertAllowed('bash', { command: 'grep secret src/app.ts' })
+  await assertAllowed('bash', { command: 'grep warning src/app.ts' })
   await assertAllowed('bash', { command: 'npm test', cwd: 'D:/workspace/project' })
   await assertAllowed('bash', {
     command: 'printf done',
     env: { OUTPUT_PATH: 'D:/workspace/project/output.txt' },
   })
+})
+
+test('shell literal scanning is independent of command grammar', async () => {
+  const blockedCommands = [
+    '(cat .env)',
+    '{ cat .env; }',
+    'if true; then cat .env; fi',
+    'Write-Output .ssh/config',
+    'grep secret src/app.ts',
+    'cat .env.example && cat private.key',
+  ]
+
+  for (const command of blockedCommands) await assertBlocked('bash', { command }, [command])
+
+  await assertAllowed('bash', { command: '{ echo ordinary; }' })
+  await assertAllowed('bash', { command: 'cat .env.example' })
 })
 
 test('dynamic shell syntax confirms with UI and fails closed headlessly', async () => {

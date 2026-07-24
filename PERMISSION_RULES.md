@@ -80,15 +80,15 @@ No legitimate dev scenario needs these. Asking only adds fatigue. Deny is struct
 #### Shell handling
 
 - Checks `command`, the effective `cwd`, and every value in the caller-supplied `env` object. It never reads or expands host environment variables.
-- The tokenizer covers quoted and unquoted arguments, pipelines, redirects, and multiple commands. Direct path extraction supports common Bash (`cat`, `grep`, `sed`, `tee`, `cp`, `mv`, `rm`), PowerShell (`Get-Content`, `Set-Content`, `Out-File`, `Copy-Item`, `Remove-Item`), and cmd (`type`, `copy`, `move`, `del`) forms.
-- Wrapper commands (`sudo`, `command`, and `builtin`), their options, and leading environment assignments are resolved before direct-path and unsupported-execution checks.
-- Variables, command substitution, unbalanced quotes, encoded commands, nested shell command strings, and other unsupported dynamic execution produce a prompt decision. All candidates are evaluated before enforcement, so a literal deny always wins; otherwise one confirmation is shown per tool call when UI is available, and headless/no-UI calls fail closed.
-- The tokenizer is intentionally conservative: uncertain input may be blocked or prompted even when it would be harmless.
+- Shell commands are not parsed by command name or argument semantics. The raw command is split on lexical Shell boundaries, and every non-empty fragment is evaluated by the same `checkPath()` and ordered `FILE_RULES` policy used by dedicated tools.
+- Pipes, redirects, parentheses, brace groups, and control structures therefore cannot hide a literal protected path. The exact `.env.example` exception remains scoped to its own fragment.
+- This policy is intentionally conservative. A protected-looking word can be denied even when it was intended as a search pattern, comment, or output text.
+- Variables, command substitution, unbalanced quotes, encoded commands, and nested execution that accepts a command string produce a prompt decision. Literal denies take precedence; otherwise one confirmation is shown per tool call when UI is available, and headless/no-UI calls fail closed.
 
 #### Cross-tool behavior
 
-- YAML globs cannot reliably understand pipe and redirect combinations. The pre-hook tokenizes common direct forms; workspace isolation and OS-level guards remain necessary for airtight enforcement.
-- The YAML matcher sees command text, while the pre-hook evaluates extracted candidates. Keep the pre-hook as the protected-path authority.
+- YAML globs cannot reliably understand pipe and redirect combinations. The pre-hook scans raw Shell text independently of command grammar; workspace isolation and OS-level guards remain necessary for airtight enforcement.
+- The YAML matcher sees command text, while the pre-hook evaluates protected-looking lexical fragments. Keep the pre-hook as the protected-path authority.
 
 #### Known limits
 
