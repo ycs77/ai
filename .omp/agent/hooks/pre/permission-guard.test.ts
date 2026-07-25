@@ -162,37 +162,48 @@ test('protected directory roots and path variants fail closed', async () => {
   const secrets = createHarness()
   const result = await secrets.call('read', { path: 'secrets' })
   assert.equal(result?.block, true)
-  assert.equal(result?.reason?.includes('secrets/ directory'), true)
+  assert.equal(
+    result?.reason,
+    'Permission denied: Blocked by protected-path pattern: (^|\\/)secrets.',
+  )
   const legacySecret = await secrets.call('read', { path: 'my-secrets' })
-  assert.equal(legacySecret?.reason?.includes("filename contains 'secret'"), true)
-  assert.equal(protectedPathReason('my-secrets'), "filename contains 'secret'")
-
+  assert.equal(
+    legacySecret?.reason,
+    'Permission denied: Blocked by protected-path pattern: secret[^/]*$.',
+  )
+  assert.equal(
+    protectedPathReason('my-secrets'),
+    'Blocked by protected-path pattern: secret[^/]*$',
+  )
 })
 
-test('protected-path helper reports the matched conservative prefix', () => {
+test('protected-path helper reports the matched OMP-style pattern reason', () => {
   const cases = [
-    ['secrets', 'secrets/ directory'],
-    ['secrets/', 'secrets/ directory'],
-    ['docs/secrets-guide.md', 'secrets/ directory'],
-    ['.aws', '.aws/ directory'],
-    ['C:\\Users\\user\\.AWS\\credentials', '.aws/ directory'],
-    ['directory/.aws-backup/file.txt', '.aws/ directory'],
-    ['.ssh.example', '.ssh/ directory'],
-    ['C:\\Users/user\\.SSH/config', '.ssh/ directory'],
-    ['nested/config/.env', '.env file (*.env)'],
-    ['nested/config/.env.local', '.env.* file (*.env.*)'],
-    ['nested/config/appsettings.json', 'appsettings.json'],
-    ['home/user/id_ed25519', 'SSH private key'],
-    ['nested/api-credential.json', "filename contains 'credential'"],
-    ['nested/client-secret.txt', "filename contains 'secret'"],
-    ['D:/workspace/token.txt', "filename contains 'token'"],
-    ['certs/certificate.pem', '.pem file'],
-    ['certs/private.key', '.key file'],
-    ['certs/certificate.crt', '.crt file'],
+    ['secrets', '(^|\\/)secrets'],
+    ['secrets/', '(^|\\/)secrets'],
+    ['docs/secrets-guide.md', '(^|\\/)secrets'],
+    ['.aws', '(^|\\/)\\.aws'],
+    ['C:\\Users\\user\\.AWS\\credentials', '(^|\\/)\\.aws'],
+    ['directory/.aws-backup/file.txt', '(^|\\/)\\.aws'],
+    ['.ssh.example', '(^|\\/)\\.ssh'],
+    ['C:\\Users/user\\.SSH/config', '(^|\\/)\\.ssh'],
+    ['nested/config/.env', '\\.env$'],
+    ['nested/config/.env.local', '\\.env\\.[^/]*$'],
+    ['nested/config/appsettings.json', '(^|\\/)appsettings\\.json$'],
+    ['home/user/id_ed25519', '(^|\\/)(?:id_rsa|id_dsa|id_ecdsa|id_ed25519)$'],
+    ['nested/api-credential.json', 'credential[^/]*$'],
+    ['nested/client-secret.txt', 'secret[^/]*$'],
+    ['D:/workspace/token.txt', 'token[^/]*$'],
+    ['certs/certificate.pem', '\\.pem$'],
+    ['certs/private.key', '\\.key$'],
+    ['certs/certificate.crt', '\\.crt$'],
   ] as const
 
-  for (const [path, expectedReason] of cases) {
-    assert.equal(protectedPathReason(path), expectedReason)
+  for (const [path, pattern] of cases) {
+    assert.equal(
+      protectedPathReason(path),
+      `Blocked by protected-path pattern: ${pattern}`,
+    )
   }
 })
 
@@ -213,8 +224,10 @@ test('protected-looking cwd denies ordinary relative paths', async () => {
   const harness = createHarness({ cwd: 'D:/workspace/token-project' })
   const result = await harness.call('read', { path: 'ordinary.txt' })
 
-  assert.equal(result?.block, true)
-  assert.equal(result?.reason?.includes("filename contains 'token'"), true)
+  assert.equal(
+    result?.reason,
+    'Permission denied: Blocked by protected-path pattern: token[^/]*$.',
+  )
 })
 
 test('unrelated .ss and .ssl paths remain allowed', async () => {

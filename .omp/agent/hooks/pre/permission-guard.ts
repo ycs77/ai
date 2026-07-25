@@ -12,79 +12,64 @@ import type { HookAPI } from '@oh-my-pi/pi-coding-agent/extensibility/hooks'
 type Approval = 'allow' | 'deny' | 'prompt'
 
 interface FileRule {
-  name: string
   match: RegExp
   approval: Approval
 }
 
 const FILE_RULES: readonly FileRule[] = [
   {
-    name: 'secrets/ directory',
     match: /(^|\/)secrets/,
     approval: 'deny',
   },
   {
-    name: '.aws/ directory',
     match: /(^|\/)\.aws/,
     approval: 'deny',
   },
   {
-    name: '.ssh/ directory',
     match: /(^|\/)\.ssh/,
     approval: 'deny',
   },
   {
-    name: '.env.example exception',
     match: /\.env\.example$/,
     approval: 'allow',
   },
   {
-    name: '.env file (*.env)',
     match: /\.env$/,
     approval: 'deny',
   },
   {
-    name: '.env.* file (*.env.*)',
     match: /\.env\.[^/]*$/,
     approval: 'deny',
   },
   {
-    name: 'appsettings.json',
     match: /(^|\/)appsettings\.json$/,
     approval: 'deny',
   },
   {
-    name: "filename contains 'credential'",
     match: /credential[^/]*$/,
     approval: 'deny',
   },
   {
-    name: "filename contains 'secret'",
     match: /secret[^/]*$/,
     approval: 'deny',
   },
   {
-    name: "filename contains 'token'",
     match: /token[^/]*$/,
     approval: 'deny',
   },
   {
-    name: 'SSH private key',
     match: /(^|\/)(?:id_rsa|id_dsa|id_ecdsa|id_ed25519)$/,
     approval: 'deny',
   },
   {
-    name: '.pem file',
     match: /\.pem$/,
     approval: 'deny',
   },
   {
-    name: '.key file',
     match: /\.key$/,
     approval: 'deny',
   },
   {
-    name: '.crt file',
     match: /\.crt$/,
     approval: 'deny',
   },
@@ -202,6 +187,16 @@ function matchingFileRule(pathLike: string): FileRule | undefined {
   return FILE_RULES.find(({ match }) => match.test(comparisonPath))
 }
 
+function fileRuleReason(rule: FileRule): string | undefined {
+  if (rule.approval === 'deny') {
+    return `Blocked by protected-path pattern: ${rule.match.source}`
+  }
+  if (rule.approval === 'prompt') {
+    return `Prompt required by protected-path pattern: ${rule.match.source}`
+  }
+  return undefined
+}
+
 function normalizedPathCandidates(rawPath: string, cwd?: string): string[] {
   const comparisonPaths: string[] = []
   const add = (candidate: string) => {
@@ -225,7 +220,7 @@ function normalizedPathCandidates(rawPath: string, cwd?: string): string[] {
 
 export function protectedPathReason(pathLike: string): string | undefined {
   const rule = matchingFileRule(pathLike)
-  return rule?.approval === 'deny' ? rule.name : undefined
+  return rule ? fileRuleReason(rule) : undefined
 }
 
 
@@ -267,7 +262,7 @@ function checkPath(rawPath: string, cwd?: string): PathDecision {
 
     const decision: PathDecision = {
       approval: rule.approval,
-      reason: rule.name,
+      reason: fileRuleReason(rule),
     }
     if (decision.approval === 'deny') return decision
     promptDecision ??= decision
