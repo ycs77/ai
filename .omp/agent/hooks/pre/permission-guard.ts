@@ -10,104 +10,81 @@ import { fileURLToPath } from 'node:url'
 import type { HookAPI } from '@oh-my-pi/pi-coding-agent/extensibility/hooks'
 
 type Approval = 'allow' | 'deny' | 'prompt'
-type RuleTarget = 'basename' | 'path'
 
 interface FileRule {
   name: string
-  target: RuleTarget
   match: RegExp
   approval: Approval
 }
 
-
 const FILE_RULES: readonly FileRule[] = [
   {
     name: 'secrets/ directory',
-    target: 'path',
-    match: /(^|[/\\])secrets/i,
+    match: /(^|\/)secrets/i,
     approval: 'deny',
   },
   {
     name: '.aws/ directory',
-    target: 'path',
-    match: /(^|[/\\])\.aws/i,
+    match: /(^|\/)\.aws/i,
     approval: 'deny',
   },
   {
     name: '.ssh/ directory',
-    target: 'path',
-    match: /(^|[/\\])\.ssh/i,
-    approval: 'deny',
-  },
-  {
-    name: '.ss/ directory',
-    target: 'path',
-    match: /(^|[/\\])\.ss/i,
+    match: /(^|\/)\.ssh/i,
     approval: 'deny',
   },
   {
     name: '.env.example exception',
-    target: 'basename',
-    match: /^\.env\.example$/i,
+    match: /(^|\/)\.env\.example$/i,
     approval: 'allow',
   },
   {
     name: '.env file (*.env)',
-    target: 'basename',
     match: /\.env$/i,
     approval: 'deny',
   },
   {
     name: '.env.* file (*.env.*)',
-    target: 'basename',
-    match: /\.env\./i,
+    match: /\.env\.[^/]*$/i,
     approval: 'deny',
   },
   {
     name: 'appsettings.json',
-    target: 'basename',
-    match: /^appsettings\.json$/i,
+    match: /(^|\/)appsettings\.json$/i,
     approval: 'deny',
   },
   {
     name: "filename contains 'credential'",
-    target: 'basename',
-    match: /credential/i,
+    match: /credential[^/]*$/i,
     approval: 'deny',
   },
   {
     name: "filename contains 'secret'",
-    target: 'basename',
-    match: /secret/i,
+    match: /secret[^/]*$/i,
     approval: 'deny',
   },
   {
     name: "filename contains 'token'",
-    target: 'basename',
-    match: /token/i,
+    match: /token[^/]*$/i,
     approval: 'deny',
   },
   {
     name: 'SSH private key',
-    target: 'basename',
-    match: /^(?:id_rsa|id_dsa|id_ecdsa|id_ed25519)$/i,
+    match: /(^|\/)(?:id_rsa|id_dsa|id_ecdsa|id_ed25519)$/i,
     approval: 'deny',
   },
   {
     name: '.pem file',
-    target: 'basename',
     match: /\.pem$/i,
     approval: 'deny',
   },
   {
     name: '.key file',
-    target: 'basename',
     match: /\.key$/i,
     approval: 'deny',
   },
   {
     name: '.crt file',
-    target: 'basename',
     match: /\.crt$/i,
     approval: 'deny',
   },
@@ -193,10 +170,60 @@ function stripReadSelectors(value: string): string {
   return candidate
 }
 
-function basename(pathLike: string): string {
-  const normalized = pathLike.replace(/\\/g, '/').replace(/\/+$/, '')
-  return normalized.slice(normalized.lastIndexOf('/') + 1)
+function normalizePathSeparators(pathLike: string): string {
+  return pathLike.replace(/\\/g, '/')
 }
+
+function usesWindowsPathSemantics(pathLike: string): boolean {
+  const normalized = normalizePathSeparators(pathLike)
+  return /^[a-z]:\//i.test(normalized) || normalized.startsWith('//')
+}
+
+
+function normalizePathLike(pathLike: string): string {
+  const normalized = normalizePathSeparators(pathLike)
+  const implementation = usesWindowsPathSemantics(normalized) ? path.win32 : path.posix
+  return normalizePathSeparators(implementation.normalize(normalized))
+}
+
+function resolvePathLike(cwd: string, pathLike: string): string {
+  const normalizedCwd = normalizePathSeparators(cwd)
+  const normalizedPath = normalizePathSeparators(pathLike)
+  const implementation = usesWindowsPathSemantics(normalizedCwd) ? path.win32 : path.posix
+  return normalizePathSeparators(implementation.resolve(normalizedCwd, normalizedPath))
+}
+
+function matchingFileRule(pathLike: string): FileRule | undefined {
+  const normalized = normalizePathSeparators(pathLike).replace(/\/+$/, '')
+  return FILE_RULES.find((rule) => rule.match.test(normalized))
+}
+
+function normalizedPathCandidates(rawPath: string, cwd?: string): string[] {
+  const comparisonPaths: string[] = []
+  const add = (candidate: string) => {
+    if (!comparisonPaths.includes(candidate)) comparisonPaths.push(candidate)
+  }
+
+  const separatorNormalized = normalizePathSeparators(rawPath)
+  const lexicalNormalized = normalizePathLike(separatorNormalized)
+  add(separatorNormalized)
+  add(lexicalNormalized)
+
+  const isAbsolute = usesWindowsPathSemantics(separatorNormalized) ||
+    separatorNormalized.startsWith('/')
+  if (cwd && !isAbsolute) {
+    add(resolvePathLike(cwd, separatorNormalized))
+    add(normalizePathLike(cwd))
+  }
+
+  return comparisonPaths
+}
+
+export function protectedPathReason(pathLike: string): string | undefined {
+  const rule = matchingFileRule(pathLike)
+  return rule?.approval === 'deny' ? rule.name : undefined
+}
+
 
 function decodeProtocolPath(rawPath: string, scheme: string): string | PathDecision {
   try {
@@ -214,8 +241,7 @@ function checkPath(rawPath: string, cwd?: string): PathDecision {
   if (!rawPath.trim()) return allowPath()
 
   let candidate = stripReadSelectors(stripOuterQuotes(rawPath.trim()))
-  let originalPath: string | undefined
-  let relativeCwd: string | undefined
+  let resolutionCwd = cwd
   const protocol = candidate.match(PROTOCOL_RE)
 
   if (protocol) {
@@ -227,31 +253,22 @@ function checkPath(rawPath: string, cwd?: string): PathDecision {
     const decoded = decodeProtocolPath(candidate, scheme)
     if (typeof decoded !== 'string') return decoded
     candidate = decoded
-  } else {
-    originalPath = candidate.replace(/\\/g, '/')
-    if (cwd && !path.isAbsolute(candidate)) {
-      relativeCwd = cwd.replace(/\\/g, '/')
-      candidate = path.resolve(cwd, candidate)
-    }
+    resolutionCwd = undefined
   }
 
-  const normalized = candidate.replace(/\\/g, '/')
-  const comparisonPaths = [normalized]
-  if (originalPath && originalPath !== normalized) comparisonPaths.push(originalPath)
-  if (relativeCwd && relativeCwd !== normalized) comparisonPaths.push(relativeCwd)
-  const base = basename(normalized)
+  let promptDecision: PathDecision | undefined
+  for (const comparisonPath of normalizedPathCandidates(candidate, resolutionCwd)) {
+    const rule = matchingFileRule(comparisonPath)
+    if (!rule || rule.approval === 'allow') continue
 
-  for (const rule of FILE_RULES) {
-    const matched = rule.target === 'basename'
-      ? rule.match.test(base)
-      : comparisonPaths.some(value => rule.match.test(value))
-    if (!matched) continue
-    return {
+    const decision: PathDecision = {
       approval: rule.approval,
-      reason: rule.approval === 'allow' ? undefined : rule.name,
+      reason: rule.name,
     }
+    if (decision.approval === 'deny') return decision
+    promptDecision ??= decision
   }
-  return allowPath()
+  return promptDecision ?? allowPath()
 }
 
 /** Extracts file paths from edit tool input by parsing [PATH#TAG] headers. */
@@ -290,7 +307,7 @@ function splitDelimitedPaths(value: string): string[] {
       quote = char
       continue
     }
-    if (char === ',' || char === ';') flush()
+    if (char === ',' || char === ';' || /\s/.test(char)) flush()
     else current += char
   }
   flush()
@@ -303,14 +320,16 @@ function dedicatedToolPaths(tool: string, input: Record<string, unknown> | strin
     return extractEditPaths(text)
   }
 
-  if (typeof input === 'string') {
-    return tool === 'grep' ? splitDelimitedPaths(input) : [input]
-  }
+  const values = typeof input === 'string'
+    ? [input]
+    : [...stringValues(input.path), ...stringValues(input.paths)]
+  if (tool !== 'grep') return values
 
   const candidates: string[] = []
-  for (const value of [...stringValues(input.path), ...stringValues(input.paths)]) {
-    if (tool === 'grep') candidates.push(...splitDelimitedPaths(value))
-    else candidates.push(value)
+  for (const value of values) {
+    for (const candidate of [value, ...splitDelimitedPaths(value)]) {
+      if (candidate && !candidates.includes(candidate)) candidates.push(candidate)
+    }
   }
   return candidates
 }
@@ -384,10 +403,11 @@ async function enforceApprovals(
 function effectiveShellCwd(input: Record<string, unknown>, contextCwd: string): string {
   const raw = typeof input.cwd === 'string' && input.cwd.trim() ? input.cwd.trim() : contextCwd
   if (PROTOCOL_RE.test(raw)) return contextCwd
-  return path.isAbsolute(raw) ? raw : path.resolve(contextCwd, raw)
-}
 
-// Hook registration
+  const normalized = normalizePathSeparators(raw)
+  const isAbsolute = usesWindowsPathSemantics(normalized) || normalized.startsWith('/')
+  return isAbsolute ? normalizePathLike(normalized) : resolvePathLike(contextCwd, normalized)
+}
 
 export default function (pi: HookAPI): void {
   pi.on('tool_call', async (event, ctx) => {

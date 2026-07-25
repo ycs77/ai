@@ -58,12 +58,13 @@ No legitimate dev scenario needs these. Asking only adds fatigue. Deny is struct
 
 ### Protected path policy
 
-`.omp/agent/hooks/pre/permission-guard.ts` is the primary protected-path boundary. `read`, `write`, `grep`, `edit`, and `bash` all use its single ordered `FILE_RULES` policy. The YAML Bash patterns are supplemental defense only.
+`.omp/agent/hooks/pre/permission-guard.ts` is the primary protected-path boundary. `read`, `write`, `grep`, `edit`, and `bash` all call the same `checkPath()` flow. Every filesystem policy lives in one ordered `FILE_RULES` list of regular-expression matchers applied to every normalized comparison path; the first matching rule decides that comparison path. The YAML Bash patterns are supplemental defense only.
 
-- `read` and `write` inspect every path input. `grep` accepts both `path` and `paths`, including string arrays and comma/semicolon-delimited values. `edit` inspects every `[PATH#TAG]` section.
-- Rules use first-match semantics for each candidate. The completed candidate decisions are then aggregated for the whole tool call with `deny > prompt > allow` precedence. A basename exactly equal to `.env.example` is allowed, but it never exempts another candidate in the same call.
-- Local relative paths are evaluated in their original normalized form, after resolution against the effective working directory, and against that working directory itself. This prevents `..` or a protected working directory from hiding `secrets`, `.aws`, `.ssh`, or `.ss`.
-- Protected extensions (`.env`, `.pem`, `.key`, and `.crt`) are matched case-insensitively. The ordered `.env.example` allow rule remains the exact exception.
+- `read` and `write` inspect every path input. `grep` accepts both `path` and `paths`, including strings, string arrays, and comma-, semicolon-, or unquoted-whitespace-delimited values. Each string is checked whole and as individual path candidates. `edit` inspects every `[PATH#TAG]` section.
+- Local relative paths are evaluated in their separator-normalized raw form, lexical normalized form, after resolution against the effective working directory, and against that working directory itself. This prevents `.`, `..`, mixed separators, or a protected working directory from hiding a protected name. Consequently, a protected-looking working-directory basename such as `token-project` can deny an otherwise ordinary relative operation.
+- `secrets`, `.aws`, and `.ssh` are matched case-insensitively at path-segment boundaries. Suffixes remain unrestricted, so `.aws-backup`, `.ssh.example`, and equivalent conservative matches are denied. `.ss` is not a standard sensitive directory and is not protected; unrelated `.ssl` names remain allowed.
+- Filename rules run against the complete normalized comparison path, but their regular expressions are constrained to its final segment. Protected extensions (`.env`, `.pem`, `.key`, and `.crt`) and filenames containing `credential`, `secret`, or `token` are matched case-insensitively without treating a matching parent directory such as `token-cache/` as a filename match.
+- Protected-directory deny rules precede the exact `.env.example` allow exception, so a nested `.env.example` is allowed unless another earlier rule protects its path, as with `.ssh/.env.example`. An allow match never exempts another representation or candidate: their completed decisions are aggregated for the whole tool call with `deny > prompt > allow` precedence.
 - Denial and confirmation messages identify only the matched policy or unsupported syntax. They never echo a complete command, candidate path, `env` object, or environment value.
 
 #### Protocol handling

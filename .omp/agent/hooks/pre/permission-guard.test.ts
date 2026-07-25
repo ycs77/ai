@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import registerPermissionGuard from './permission-guard.ts'
+import registerPermissionGuard, { protectedPathReason } from './permission-guard.ts'
 
 type ToolInput = Record<string, unknown> | string
 
@@ -94,6 +94,8 @@ test('dedicated tools share protected-path policy across path shapes', async () 
 test('the .env.example exception applies to one candidate only', async () => {
   await assertAllowed('read', { path: '.env.example' })
   await assertAllowed('read', { path: '.env.example:1-5' })
+  await assertAllowed('read', { path: 'nested/config/.env.example' })
+  await assertBlocked('read', { path: '.ssh/.env.example' })
   await assertBlocked('grep', { paths: ['.env.example', '.env'] })
 })
 
@@ -110,30 +112,145 @@ test('web and confirmed virtual URIs remain allowed while unknown protocols fail
 test('protected directory roots and path variants fail closed', async () => {
   const blockedPaths = [
     'secrets',
+    'secrets/',
+    './secrets',
+    'src/secrets',
+    'src/secrets/file.txt',
+    'my-secrets',
+    'secrets.txt',
+    'docs/secrets-guide.md',
     '.aws',
+    '.aws/',
+    '.aws/credentials',
     '.aws-backup',
+    '.aws.example',
+    './.aws',
+    '.aws/.',
+    'src/../.aws/credentials',
     '.ssh',
+    '.ssh/',
+    '.ssh/config',
+    '.ssh-backup',
     '.ssh.example',
-    '.ss',
+    'directory/.ssh.example/config',
+    './.ssh',
+    '.ssh/.',
+    'src/../.ssh/config',
+    'C:\\Users\\user\\.aws',
+    'C:\\Users\\user\\.aws\\credentials',
+    'C:/Users/user/.aws/credentials',
+    'C:\\Users/user\\.ssh/config',
+    '/home/user/.aws/credentials',
+    '/home/user/.ssh',
+    '/home/user/.ssh/config',
     'C:\\Users\\user\\.AWS',
     '/home/user/.SSH/config',
-    'src/../.ssh/config',
   ]
 
   for (const path of blockedPaths) await assertBlocked('read', { path })
 
-  await assertBlocked('grep', { paths: ['src', '.ssh'] })
-  await assertBlocked('edit', {
-    input: '[.aws#ABCD]\nINS.TAIL:\n+blocked',
-  })
-
-  const protectedCwd = createHarness({ cwd: 'D:/users/lucas/.ssh' })
-  assert.equal((await protectedCwd.call('read', { path: '..' }))?.block, true)
+  for (const [cwd, paths] of [
+    ['D:/users/lucas/.ssh', ['.', '..', 'config']],
+    ['D:/users/lucas/.aws', ['.', '..', 'credentials']],
+  ] as const) {
+    const harness = createHarness({ cwd })
+    for (const path of paths) {
+      assert.equal((await harness.call('read', { path }))?.block, true)
+    }
+  }
 
   const secrets = createHarness()
   const result = await secrets.call('read', { path: 'secrets' })
   assert.equal(result?.block, true)
   assert.equal(result?.reason?.includes('secrets/ directory'), true)
+  const legacySecret = await secrets.call('read', { path: 'my-secrets' })
+  assert.equal(legacySecret?.reason?.includes("filename contains 'secret'"), true)
+  assert.equal(protectedPathReason('my-secrets'), "filename contains 'secret'")
+
+})
+
+test('protected-path helper reports the matched conservative prefix', () => {
+  const cases = [
+    ['secrets', 'secrets/ directory'],
+    ['secrets/', 'secrets/ directory'],
+    ['docs/secrets-guide.md', 'secrets/ directory'],
+    ['.aws', '.aws/ directory'],
+    ['C:\\Users\\user\\.AWS\\credentials', '.aws/ directory'],
+    ['directory/.aws-backup/file.txt', '.aws/ directory'],
+    ['.ssh.example', '.ssh/ directory'],
+    ['C:\\Users/user\\.SSH/config', '.ssh/ directory'],
+    ['nested/config/.env', '.env file (*.env)'],
+    ['nested/config/.env.local', '.env.* file (*.env.*)'],
+    ['nested/config/appsettings.json', 'appsettings.json'],
+    ['home/user/id_ed25519', 'SSH private key'],
+    ['nested/api-credential.json', "filename contains 'credential'"],
+    ['nested/client-secret.txt', "filename contains 'secret'"],
+    ['D:/workspace/token.txt', "filename contains 'token'"],
+    ['certs/certificate.pem', '.pem file'],
+    ['certs/private.key', '.key file'],
+    ['certs/certificate.crt', '.crt file'],
+  ] as const
+
+  for (const [path, expectedReason] of cases) {
+    assert.equal(protectedPathReason(path), expectedReason)
+  }
+})
+
+test('filename rules only match the final path segment', async () => {
+  const paths = [
+    'token-cache/ordinary.txt',
+    'credential-store/ordinary.txt',
+    'secret-folder/ordinary.txt',
+  ]
+
+  for (const path of paths) {
+    assert.equal(protectedPathReason(path), undefined)
+    await assertAllowed('read', { path })
+  }
+})
+
+test('protected-looking cwd denies ordinary relative paths', async () => {
+  const harness = createHarness({ cwd: 'D:/workspace/token-project' })
+  const result = await harness.call('read', { path: 'ordinary.txt' })
+
+  assert.equal(result?.block, true)
+  assert.equal(result?.reason?.includes("filename contains 'token'"), true)
+})
+
+test('unrelated .ss and .ssl paths remain allowed', async () => {
+  const paths = ['.ss', '/home/user/.ss', '.ssl', '.ssl-certs']
+
+  for (const path of paths) {
+    assert.equal(protectedPathReason(path), undefined)
+    await assertAllowed('read', { path })
+  }
+})
+
+test('all guarded tools use the same protected-path helper', async () => {
+  await assertBlocked('read', { path: '.aws' })
+  await assertBlocked('write', { path: '.ssh/config' })
+  await assertBlocked('grep', { paths: ['src', '.aws-backup'] })
+  await assertBlocked('edit', '[secrets/app.json#ABCD]\nDEL 1')
+  await assertBlocked('bash', { command: 'cat directory/.ssh.example/config' })
+})
+
+test('grep checks path, paths, arrays, and every delimited path', async () => {
+  const inputs: ToolInput[] = [
+    { path: '.ssh' },
+    { paths: '.ssh' },
+    { paths: ['.ssh'] },
+    { paths: ['src', '.ssh'] },
+    { paths: ['.aws', 'src'] },
+    { path: ['src', '.aws-backup'] },
+    { path: 'src,.aws,docs' },
+    { paths: 'src;.ssh;docs' },
+    { path: 'src .ssh.example docs' },
+    { paths: 'src secrets docs' },
+    { path: 'src ".aws" docs' },
+    '.ssh',
+  ]
+
+  for (const input of inputs) await assertBlocked('grep', input)
 })
 
 test('sensitive extensions are case-insensitive without widening the example exception', async () => {
