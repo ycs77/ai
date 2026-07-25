@@ -254,20 +254,36 @@ test('grep checks path, paths, arrays, and every delimited path', async () => {
 })
 
 test('sensitive extensions are case-insensitive without widening the example exception', async () => {
-  const blockedPaths = [
-    '.ENV',
-    'production.Env',
-    '.ENV.LOCAL',
-    'certificate.PEM',
-    'private.Key',
-    'certificate.CRT',
-    '.env.example.local',
+  const blockedPathCases = [
+    ['*.env', ['.env', '.ENV', 'production.Env']],
+    ['*.env.*', ['.env.local', '.ENV.LOCAL', '.Env.Local']],
+    ['*.pem', ['certificate.pem', 'certificate.PEM', 'certificate.Pem']],
+    ['*.key', ['private.key', 'private.KEY', 'private.Key']],
+    ['*.crt', ['certificate.crt', 'certificate.CRT', 'certificate.Crt']],
+    ['post-example suffix', ['.env.example.local', 'example.env.example.local']],
+  ] as const
+
+  for (const [rule, paths] of blockedPathCases) {
+    for (const path of paths) {
+      await assertBlocked('read', { path })
+      assert.ok(protectedPathReason(path), `${rule} should block ${path}`)
+    }
+  }
+
+  const allowedPaths = [
+    '.env.example',
+    '.ENV.EXAMPLE',
+    '.Env.Example',
+    'example.env.example',
+    'environment.md',
+    'keyboard.ts',
+    'pem-notes.txt',
   ]
 
-  for (const path of blockedPaths) await assertBlocked('read', { path })
-
-  await assertAllowed('read', { path: '.ENV.EXAMPLE' })
-  await assertAllowed('read', { path: '.Env.Example' })
+  for (const path of allowedPaths) {
+    await assertAllowed('read', { path })
+    assert.equal(protectedPathReason(path), undefined)
+  }
 })
 
 test('shell direct syntax checks arguments, redirects, cwd, and explicit env', async () => {

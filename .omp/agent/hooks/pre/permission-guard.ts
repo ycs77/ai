@@ -20,72 +20,72 @@ interface FileRule {
 const FILE_RULES: readonly FileRule[] = [
   {
     name: 'secrets/ directory',
-    match: /(^|\/)secrets/i,
+    match: /(^|\/)secrets/,
     approval: 'deny',
   },
   {
     name: '.aws/ directory',
-    match: /(^|\/)\.aws/i,
+    match: /(^|\/)\.aws/,
     approval: 'deny',
   },
   {
     name: '.ssh/ directory',
-    match: /(^|\/)\.ssh/i,
+    match: /(^|\/)\.ssh/,
     approval: 'deny',
   },
   {
     name: '.env.example exception',
-    match: /(^|\/)\.env\.example$/i,
+    match: /\.env\.example$/,
     approval: 'allow',
   },
   {
     name: '.env file (*.env)',
-    match: /\.env$/i,
+    match: /\.env$/,
     approval: 'deny',
   },
   {
     name: '.env.* file (*.env.*)',
-    match: /\.env\.[^/]*$/i,
+    match: /\.env\.[^/]*$/,
     approval: 'deny',
   },
   {
     name: 'appsettings.json',
-    match: /(^|\/)appsettings\.json$/i,
+    match: /(^|\/)appsettings\.json$/,
     approval: 'deny',
   },
   {
     name: "filename contains 'credential'",
-    match: /credential[^/]*$/i,
+    match: /credential[^/]*$/,
     approval: 'deny',
   },
   {
     name: "filename contains 'secret'",
-    match: /secret[^/]*$/i,
+    match: /secret[^/]*$/,
     approval: 'deny',
   },
   {
     name: "filename contains 'token'",
-    match: /token[^/]*$/i,
+    match: /token[^/]*$/,
     approval: 'deny',
   },
   {
     name: 'SSH private key',
-    match: /(^|\/)(?:id_rsa|id_dsa|id_ecdsa|id_ed25519)$/i,
+    match: /(^|\/)(?:id_rsa|id_dsa|id_ecdsa|id_ed25519)$/,
     approval: 'deny',
   },
   {
     name: '.pem file',
-    match: /\.pem$/i,
+    match: /\.pem$/,
     approval: 'deny',
   },
   {
     name: '.key file',
-    match: /\.key$/i,
+    match: /\.key$/,
     approval: 'deny',
   },
   {
     name: '.crt file',
-    match: /\.crt$/i,
+    match: /\.crt$/,
     approval: 'deny',
   },
 ]
@@ -193,9 +193,13 @@ function resolvePathLike(cwd: string, pathLike: string): string {
   return normalizePathSeparators(implementation.resolve(normalizedCwd, normalizedPath))
 }
 
+function normalizeFileRulePath(pathLike: string): string {
+  return normalizePathSeparators(pathLike).replace(/\/+$/, '').toLowerCase()
+}
+
 function matchingFileRule(pathLike: string): FileRule | undefined {
-  const normalized = normalizePathSeparators(pathLike).replace(/\/+$/, '')
-  return FILE_RULES.find((rule) => rule.match.test(normalized))
+  const comparisonPath = normalizeFileRulePath(pathLike)
+  return FILE_RULES.find(({ match }) => match.test(comparisonPath))
 }
 
 function normalizedPathCandidates(rawPath: string, cwd?: string): string[] {
