@@ -12,7 +12,6 @@ npm install -g @openai/codex@latest
 npx -y skills add ycs77/skills -g \
   -a claude-code \
   -a codex \
-  -a github-copilot \
   -s '*' \
   -y
 
