@@ -2,7 +2,8 @@ setupVersion: 1
 
 # Basic
 modelRoles:
-  default: opencode-go/glm-5.2
+  # default: opencode-go/glm-5.2
+  default: openai-codex/gpt-5.6-sol:high
 symbolPreset: unicode
 
 # Theme
