@@ -164,6 +164,21 @@ test('every FILE_RULES deny entry blocks its protected path', async () => {
   }
 })
 
+test('protected directory rules keep conservative suffix matching', async () => {
+  const { call } = createHarness()
+  const paths = [
+    '.aws-backup',
+    '.aws.example',
+    '.ssh.example',
+    'directory/.ssh.example/config',
+    'docs/secrets-guide.md',
+  ]
+
+  for (const path of paths) {
+    await assertBlocked(call, 'read', { path })
+  }
+})
+
 test('filename rules only match final segments and avoid similar names', async () => {
   const { call } = createHarness()
   const paths = [
