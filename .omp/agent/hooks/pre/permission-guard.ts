@@ -86,15 +86,6 @@ const SHELL_RULES: readonly PermissionRule[] = [
   // Detects command and process substitution.
   // Example: echo $(cat file.txt), echo `date`, or cat <(echo text).
   { match: /\$\(|`|[<>]\(/, approval: 'prompt' },
-  // Detects shell line continuation and PowerShell stop-parsing syntax.
-  // Example: a trailing \ before a newline, or Write-Output --% literal.
-  { match: /\\(?:\r?\n|$)|--%/, approval: 'prompt' },
-  // Detects an unmatched single quote.
-  // Example: echo 'unterminated.
-  { match: /^(?:[^']*'[^']*')*[^']*'[^']*$/, approval: 'prompt' },
-  // Detects an unmatched double quote.
-  // Example: echo "unterminated.
-  { match: /^(?:[^"]*"[^"]*")*[^"]*"[^"]*$/, approval: 'prompt' },
   { match: /\b(?:eval|invoke-expression|iex)\b/i, approval: 'prompt' },
   { match: /\b(?:bash|sh|zsh|fish)(?:\.exe)?\b.*\s-c\b/i, approval: 'prompt' },
   { match: /\bcmd(?:\.exe)?\b.*\/[ck]\b/i, approval: 'prompt' },

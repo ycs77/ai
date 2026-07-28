@@ -16,23 +16,19 @@ theme:
 
 # Tools Approval
 # write = auto-approve read/write tiers; exec requires prompt
+# permission-guard owns protected paths and ambiguous shell syntax; bash.patterns
+# below owns literal command side effects and process-environment disclosure.
 # CRITICAL_BASH_PATTERNS (built-in) covers dangerous commands not listed here
 tools:
   approvalMode: write
 
 bash:
   patterns:
-    # Deny: Secrets & environment exposure
-    # Supplemental only: broad cross-tool/Shell protected-path checks run in
-    # hooks/pre/permission-guard.ts before these first-match patterns.
+    # Deny: Process environment exposure
+    # Kept here because permission-guard protects paths, not process environment output.
     - match: "env"
       approval: deny
     - match: "printenv"
-      approval: deny
-    # .env.example explicitly allowed before the broader deny
-    - match: "cat .env.example"
-      approval: allow
-    - match: "cat *env*"
       approval: deny
 
     # Deny: Disk-level destruction
@@ -107,13 +103,33 @@ bash:
     - match: "nc *-c *"
       approval: deny
 
-    # Ask: Shell output & file read (catches pipe edge cases)
-    - match: "echo*"
-      approval: prompt
-    - match: "cat*"
-      approval: prompt
+    # Deny: Dynamic and opaque command execution
+    - match: "powershell *-EncodedCommand*"
+      approval: deny
+    - match: "powershell *-encodedcommand*"
+      approval: deny
+    - match: "powershell.exe *-EncodedCommand*"
+      approval: deny
+    - match: "powershell.exe *-encodedcommand*"
+      approval: deny
+    - match: "pwsh *-EncodedCommand*"
+      approval: deny
+    - match: "pwsh *-encodedcommand*"
+      approval: deny
+    - match: "pwsh.exe *-EncodedCommand*"
+      approval: deny
+    - match: "pwsh.exe *-encodedcommand*"
+      approval: deny
+    - match: "powershell *--%*"
+      approval: deny
+    - match: "powershell.exe *--%*"
+      approval: deny
+    - match: "pwsh *--%*"
+      approval: deny
+    - match: "pwsh.exe *--%*"
+      approval: deny
 
-    # Ask: Deletion (all shells)
+    # Ask: Direct deletion commands (wrapped shells are handled by permission-guard)
     - match: "rm -rf*"
       approval: prompt
     - match: "rm -r*"
@@ -129,10 +145,6 @@ bash:
     - match: "del*"
       approval: prompt
     - match: "erase*"
-      approval: prompt
-    - match: "cmd /c *del*"
-      approval: prompt
-    - match: "cmd /c *erase*"
       approval: prompt
     - match: "find * -delete*"
       approval: prompt

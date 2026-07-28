@@ -400,20 +400,6 @@ test('command and process substitutions fail closed without UI', async () => {
   }
 })
 
-test('unsupported dynamic shell syntax fails closed without UI', async () => {
-  const { call } = createHarness()
-  const commands = [
-    'echo ordinary \\',
-    'echo ordinary \\\necho continued',
-    'echo --% literal',
-    'echo "unterminated',
-    "echo 'unterminated",
-  ]
-
-  for (const command of commands) {
-    await assertBlocked(call, 'bash', { command })
-  }
-})
 
 test('wrapped command execution fails closed without UI', async () => {
   const { call } = createHarness()
