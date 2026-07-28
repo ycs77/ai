@@ -232,3 +232,8 @@ bash:
     # Catch-all: allow everything else (first-match wins, must be last)
     - match: "*"
       approval: allow
+
+# Auto QA
+dev:
+  autoqa: false
+  autoqaConsent: "denied"
