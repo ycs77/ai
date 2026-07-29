@@ -3,7 +3,7 @@
  *
  * Applies declarative protected-path and shell policies to guarded tool calls.
  */
-import type { HookAPI } from '@oh-my-pi/pi-coding-agent/extensibility/hooks'
+import type { HookAPI, HookContext } from '@oh-my-pi/pi-coding-agent/extensibility/hooks'
 import { fileURLToPath } from 'node:url'
 
 type Approval = 'allow' | 'deny' | 'prompt'
@@ -16,13 +16,6 @@ interface PermissionRule {
 interface Decision {
   approval: Approval
   reason?: string
-}
-
-interface ConfirmationContext {
-  hasUI: boolean
-  ui: {
-    confirm: (title: string, message: string) => Promise<boolean>
-  }
 }
 
 const GUARDED_TOOLS = ['read', 'write', 'grep', 'edit', 'bash']
@@ -263,8 +256,9 @@ function toolPaths(tool: string, input: unknown): string[] {
 }
 
 async function enforce(
+  tool: string,
   decision: Decision,
-  context: ConfirmationContext,
+  context: HookContext,
 ) {
   if (decision.approval === 'allow') return
 
@@ -274,20 +268,27 @@ async function enforce(
   }
   if (decision.approval === 'deny' || !context.hasUI) return denied
 
-  const confirmed = await context.ui.confirm(
-    'Permission required',
-    'This operation requires confirmation. Allow it to continue?',
+  const lines = [`Allow tool: ${tool}`]
+
+  if (decision.reason) {
+    lines.push(`Reason: ${decision.reason}`)
+  }
+
+  const choice = await context.ui.select(
+    lines.join('\n'),
+    ['Approve', 'Deny'],
   )
-  return confirmed ? undefined : denied
+  return choice === 'Approve' ? undefined : denied
 }
 
 async function checkPaths(
+  tool: string,
   paths: string[],
   cwd: string,
-  context: ConfirmationContext,
+  context: HookContext,
 ) {
   for (const path of paths) {
-    const result = await enforce(decisionForPath(path, cwd), context)
+    const result = await enforce(tool, decisionForPath(path, cwd), context)
     if (result) return result
   }
 }
@@ -305,6 +306,7 @@ export default function (pi: HookAPI): void {
     if (tool !== 'bash') {
       const paths = toolPaths(tool, input)
       return checkPaths(
+        tool,
         tool === 'read' ? paths.map(stripReadSelectors) : paths,
         context.cwd,
         context,
@@ -323,11 +325,11 @@ export default function (pi: HookAPI): void {
       ...command.split(SHELL_SEPARATOR_RE).filter(Boolean),
     ]
 
-    const blocked = await checkPaths(paths, cwd, context)
+    const blocked = await checkPaths(tool, paths, cwd, context)
     if (blocked) return blocked
     const shellRule = matchingRule(command, SHELL_RULES)
     if (shellRule) {
-      return enforce({
+      return enforce(tool, {
         approval: shellRule.approval,
         reason: `shell pattern ${shellRule.match.source}`,
       }, context)

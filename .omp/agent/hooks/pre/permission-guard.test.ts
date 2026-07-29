@@ -9,7 +9,7 @@ type HookContext = {
   cwd: string
   hasUI: boolean
   ui: {
-    confirm: (title: string, message: string) => Promise<boolean>
+    select: (title: string, options: string[]) => Promise<string | undefined>
   }
 }
 
@@ -25,10 +25,10 @@ type Call = (toolName: string, input?: ToolInput) => Promise<HookResult>
 function createHarness(options: {
   cwd?: string
   hasUI?: boolean
-  confirm?: boolean
+  approvalChoice?: 'Approve' | 'Deny'
 } = {}) {
   let handler: Handler | undefined
-  const confirmations: Array<{ title: string; message: string }> = []
+  const approvalPrompts: Array<{ title: string; options: string[] }> = []
 
   registerPermissionGuard({
     on(event: string, callback: Handler) {
@@ -43,15 +43,15 @@ function createHarness(options: {
     cwd: options.cwd ?? 'D:/workspace/project',
     hasUI: options.hasUI ?? false,
     ui: {
-      async confirm(title, message) {
-        confirmations.push({ title, message })
-        return options.confirm ?? false
+      async select(title, choices) {
+        approvalPrompts.push({ title, options: choices })
+        return options.approvalChoice
       },
     },
   }
 
   return {
-    confirmations,
+    approvalPrompts,
     async call(toolName: string, input: ToolInput = {}) {
       return handler?.({ toolName, input }, context)
     },
@@ -347,9 +347,9 @@ test('Bash scans literal paths independently of command grammar', async () => {
 })
 
 test('rm -rf denies protected directories themselves but only prompts for descendants', async () => {
-  const protectedCall = createHarness({ hasUI: true, confirm: true })
-  const permittedCall = createHarness({ hasUI: true, confirm: true })
-  const rejectedCall = createHarness({ hasUI: true, confirm: false })
+  const protectedCall = createHarness({ hasUI: true, approvalChoice: 'Approve' })
+  const permittedCall = createHarness({ hasUI: true, approvalChoice: 'Approve' })
+  const rejectedCall = createHarness({ hasUI: true, approvalChoice: 'Deny' })
   const protectedDirectories = [
     '/bin',
     '/boot',
@@ -384,7 +384,7 @@ test('rm -rf denies protected directories themselves but only prompts for descen
 
   await assertBlocked(protectedCall.call, 'bash', { command: 'rm -rf build /etc' })
   await assertBlocked(protectedCall.call, 'bash', { command: 'rm -rf -- /var' })
-  assert.equal(protectedCall.confirmations.length, 0)
+  assert.equal(protectedCall.approvalPrompts.length, 0)
 
   await assertAllowed(permittedCall.call, 'bash', { command: 'rm -rf /etcetera' })
   await assertAllowed(permittedCall.call, 'bash', { command: 'rm -rf /mnt/zz' })
@@ -393,12 +393,12 @@ test('rm -rf denies protected directories themselves but only prompts for descen
   await assertAllowed(permittedCall.call, 'bash', { command: 'cat /etc/hosts' })
 
   await assertBlocked(rejectedCall.call, 'bash', { command: 'rm -rf build' })
-  assert.equal(rejectedCall.confirmations.length, 1)
+  assert.equal(rejectedCall.approvalPrompts.length, 1)
 })
 
 test('rm recursive and force options preserve prompt behavior', async () => {
-  const accepted = createHarness({ hasUI: true, confirm: true })
-  const rejected = createHarness({ hasUI: true, confirm: false })
+  const accepted = createHarness({ hasUI: true, approvalChoice: 'Approve' })
+  const rejected = createHarness({ hasUI: true, approvalChoice: 'Deny' })
   const commands = [
     'rm -r build',
     'rm -f report.txt',
@@ -411,8 +411,8 @@ test('rm recursive and force options preserve prompt behavior', async () => {
     await assertBlocked(rejected.call, 'bash', { command })
   }
 
-  assert.equal(accepted.confirmations.length, commands.length)
-  assert.equal(rejected.confirmations.length, commands.length)
+  assert.equal(accepted.approvalPrompts.length, commands.length)
+  assert.equal(rejected.approvalPrompts.length, commands.length)
 })
 
 test('Bash checks explicit cwd and env path candidates', async () => {
@@ -498,40 +498,42 @@ test('decode commands fail closed without UI', async () => {
 })
 
 test('dynamic shell syntax prompts once and respects the UI decision', async () => {
-  const denied = createHarness({ hasUI: true, confirm: false })
+  const denied = createHarness({ hasUI: true, approvalChoice: 'Deny' })
   await assertBlocked(denied.call, 'bash', { command: 'cat "$TARGET_PATH"' })
-  assert.equal(denied.confirmations.length, 1)
+  assert.equal(denied.approvalPrompts.length, 1)
 
-  const allowed = createHarness({ hasUI: true, confirm: true })
+  const allowed = createHarness({ hasUI: true, approvalChoice: 'Approve' })
   await assertAllowed(allowed.call, 'bash', { command: 'cat "$TARGET_PATH"' })
-  assert.equal(allowed.confirmations.length, 1)
+  assert.equal(allowed.approvalPrompts.length, 1)
 })
 
-test('literal path denials take precedence over shell confirmation', async () => {
-  const literal = createHarness({ hasUI: true, confirm: true })
+test('literal path denials take precedence over shell approval', async () => {
+  const literal = createHarness({ hasUI: true, approvalChoice: 'Approve' })
   await assertBlocked(literal.call, 'bash', {
     command: 'cat .env "$OTHER"',
   })
-  assert.equal(literal.confirmations.length, 0)
+  assert.equal(literal.approvalPrompts.length, 0)
 
-  const env = createHarness({ hasUI: true, confirm: true })
+  const env = createHarness({ hasUI: true, approvalChoice: 'Approve' })
   await assertBlocked(env.call, 'bash', {
     command: 'sudo bash -c "cat $TARGET_PATH"',
     env: { OUTPUT_PATH: '.env' },
   })
-  assert.equal(env.confirmations.length, 0)
+  assert.equal(env.approvalPrompts.length, 0)
 })
 
-test('confirmation messages do not expose dynamic input', async () => {
-  for (const confirm of [false, true]) {
-    const harness = createHarness({ hasUI: true, confirm })
-    await harness.call('bash', { command: 'cat "$TARGET_PATH"' })
+test('approval prompts follow OMP format without exposing dynamic input', async () => {
+  for (const approvalChoice of [undefined, 'Deny', 'Approve'] as const) {
+    const harness = createHarness({ hasUI: true, approvalChoice })
+    const result = await harness.call('bash', { command: 'cat "$TARGET_PATH"' })
 
-    assert.equal(harness.confirmations.length, 1)
-    assert.equal(
-      harness.confirmations[0].message.includes('$TARGET_PATH'),
-      false,
-    )
+    assert.equal(result?.block, approvalChoice === 'Approve' ? undefined : true)
+    assert.equal(harness.approvalPrompts.length, 1)
+
+    const [prompt] = harness.approvalPrompts
+    assert.match(prompt.title, /^Allow tool: bash\nReason: shell pattern /)
+    assert.equal(prompt.title.includes('$TARGET_PATH'), false)
+    assert.deepEqual(prompt.options, ['Approve', 'Deny'])
   }
 })
 
