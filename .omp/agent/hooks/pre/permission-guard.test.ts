@@ -346,6 +346,75 @@ test('Bash scans literal paths independently of command grammar', async () => {
   await assertAllowed(call, 'bash', { command: '{ echo ordinary; }' })
 })
 
+test('rm -rf denies protected directories themselves but only prompts for descendants', async () => {
+  const protectedCall = createHarness({ hasUI: true, confirm: true })
+  const permittedCall = createHarness({ hasUI: true, confirm: true })
+  const rejectedCall = createHarness({ hasUI: true, confirm: false })
+  const protectedDirectories = [
+    '/bin',
+    '/boot',
+    '/dev',
+    '/etc',
+    '/home',
+    '/lib',
+    '/lib64',
+    '/mnt',
+    '/opt',
+    '/proc',
+    '/root',
+    '/sbin',
+    '/sys',
+    '/usr',
+    '/var',
+    '~',
+  ]
+
+  for (const directory of protectedDirectories) {
+    await assertBlocked(protectedCall.call, 'bash', { command: `rm -rf ${directory}` })
+    await assertBlocked(protectedCall.call, 'bash', { command: `rm -rf "${directory}/"` })
+    await assertAllowed(permittedCall.call, 'bash', { command: `rm -rf ${directory}/child` })
+  }
+
+  for (const letter of ['a', 'Z']) {
+    await assertBlocked(protectedCall.call, 'bash', { command: `rm -rf /mnt/${letter}` })
+    await assertBlocked(protectedCall.call, 'bash', { command: `rm -rf /${letter}/` })
+    await assertAllowed(permittedCall.call, 'bash', { command: `rm -rf /mnt/${letter}/child` })
+    await assertAllowed(permittedCall.call, 'bash', { command: `rm -rf /${letter}/child` })
+  }
+
+  await assertBlocked(protectedCall.call, 'bash', { command: 'rm -rf build /etc' })
+  await assertBlocked(protectedCall.call, 'bash', { command: 'rm -rf -- /var' })
+  assert.equal(protectedCall.confirmations.length, 0)
+
+  await assertAllowed(permittedCall.call, 'bash', { command: 'rm -rf /etcetera' })
+  await assertAllowed(permittedCall.call, 'bash', { command: 'rm -rf /mnt/zz' })
+  await assertAllowed(permittedCall.call, 'bash', { command: 'rm -rf /mnt/1' })
+  await assertAllowed(permittedCall.call, 'bash', { command: 'rm -r /etc' })
+  await assertAllowed(permittedCall.call, 'bash', { command: 'cat /etc/hosts' })
+
+  await assertBlocked(rejectedCall.call, 'bash', { command: 'rm -rf build' })
+  assert.equal(rejectedCall.confirmations.length, 1)
+})
+
+test('rm recursive and force options preserve prompt behavior', async () => {
+  const accepted = createHarness({ hasUI: true, confirm: true })
+  const rejected = createHarness({ hasUI: true, confirm: false })
+  const commands = [
+    'rm -r build',
+    'rm -f report.txt',
+    'rm -fr cache',
+    'rm -rf output',
+  ]
+
+  for (const command of commands) {
+    await assertAllowed(accepted.call, 'bash', { command })
+    await assertBlocked(rejected.call, 'bash', { command })
+  }
+
+  assert.equal(accepted.confirmations.length, commands.length)
+  assert.equal(rejected.confirmations.length, commands.length)
+})
+
 test('Bash checks explicit cwd and env path candidates', async () => {
   const { call } = createHarness({ cwd: 'D:/workspace/project' })
 

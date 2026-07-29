@@ -66,6 +66,7 @@ const PATH_PROTOCOLS: Record<string, true> = {
   ssh: true,
   vault: true,
 }
+
 // Matches trailing Read selectors before protected-path checks.
 // Examples:
 //   .env:1-5 -> .env
@@ -74,9 +75,43 @@ const PATH_PROTOCOLS: Record<string, true> = {
 //   source.ts:5-16,960-973 -> source.ts
 //   .env.example:2-4:raw -> .env.example
 const READ_SELECTOR_RE = /:(?:raw|conflicts|\d+(?:-\d*|\+\d+)?(?:,\d+(?:-\d*|\+\d+)?)*)$/i
+
+// Matches a URI protocol prefix before protocol allowlist checks.
+// Examples:
+//   https://example.com -> https
+//   file:///tmp/report.txt -> file
 const PROTOCOL_RE = /^([a-z][a-z0-9+.-]*):\/\//i
+
+// Splits shell input into literal path candidates.
+// Example:
+//   cat .env && echo ok -> cat, .env, echo, ok
 const SHELL_SEPARATOR_RE = /[\s"'`|&;<>(){}\[\]=,]+/
+
+// Matches only protected rm -rf targets, with an optional trailing slash.
+// Windows drive mounts use /mnt/[A-Za-z] and /[A-Za-z].
+// Examples:
+//   /etc, /etc/, /mnt/C, /z, ~ -> match
+//   /etc/hosts, /mnt/cache, /zz -> no match
+const PROTECTED_RM_RF_TARGET = String.raw`(?:/(?:bin|boot|dev|etc|home|lib|lib64|mnt|mnt/[A-Za-z]|opt|proc|root|sbin|sys|usr|var|[A-Za-z])|~)/?`
+
+// Matches rm -rf commands that delete a protected target itself.
+// Supports quoted targets, an optional --, and targets after earlier operands.
+// Examples:
+//   rm -rf /etc -> match
+//   rm -rf build "/mnt/D/" -> match
+//   rm -rf /etc/cache -> no match
+const PROTECTED_RM_RF_RE = new RegExp(
+  String.raw`(?:^|[;&|()]\s*)rm\s+-rf\s+(?:--\s+)?(?:(?:"[^"\r\n]*"|'[^'\r\n]*'|[^\s;&|()]+)\s+)*(?:"${PROTECTED_RM_RF_TARGET}"|'${PROTECTED_RM_RF_TARGET}'|${PROTECTED_RM_RF_TARGET})(?=$|[\s;&|()])`,
+  'i',
+)
+
 const SHELL_RULES: readonly PermissionRule[] = [
+  // Root deletion remains in config.yml. These targets match only the listed
+  // directories themselves, not their descendants.
+  { match: PROTECTED_RM_RF_RE, approval: 'deny' },
+  // Prompts for rm commands whose first option group starts with -r or -f.
+  // Examples: rm -r build, rm -f report.txt, rm -fr cache.
+  { match: /(?:^|[;&|()]\s*)rm\s+-(?:r|f)[^\s;&|()]*/i, approval: 'prompt' },
   // Detects Unix-style shell variable expansion.
   // Example: echo "$TARGET_PATH".
   { match: /\$(?:[A-Za-z0-9_?*@#$!-]|\{)/, approval: 'prompt' },
@@ -86,13 +121,29 @@ const SHELL_RULES: readonly PermissionRule[] = [
   // Detects command and process substitution.
   // Example: echo $(cat file.txt), echo `date`, or cat <(echo text).
   { match: /\$\(|`|[<>]\(/, approval: 'prompt' },
+  // Detects dynamic shell or PowerShell expression evaluation.
+  // Examples: eval "echo ok", Invoke-Expression $COMMAND.
   { match: /\b(?:eval|invoke-expression|iex)\b/i, approval: 'prompt' },
+  // Detects nested POSIX shell command strings.
+  // Example: bash -c "cat ordinary.txt".
   { match: /\b(?:bash|sh|zsh|fish)(?:\.exe)?\b.*\s-c\b/i, approval: 'prompt' },
+  // Detects nested Windows Command Prompt command strings.
+  // Examples: cmd /c type ordinary.txt, cmd /k echo ready.
   { match: /\bcmd(?:\.exe)?\b.*\/[ck]\b/i, approval: 'prompt' },
+  // Detects PowerShell command and encoded-command arguments.
+  // Example: pwsh -Command Get-Content ordinary.txt.
   { match: /\b(?:powershell|pwsh)(?:\.exe)?\b.*-(?:c|command|encodedcommand)\b/i, approval: 'prompt' },
+  // Detects inline programs passed to common scripting runtimes.
+  // Examples: node -e "console.log('ok')", python -c "print('ok')".
   { match: /\b(?:node|python|python3|ruby|perl)(?:\.exe)?\b.*-(?:e|c)\b/i, approval: 'prompt' },
+  // Detects certutil payload decoding.
+  // Example: certutil -decode payload.txt output.txt.
   { match: /\bcertutil(?:\.exe)?\b.*\bdecode\b/i, approval: 'prompt' },
+  // Detects base64 payload decoding.
+  // Examples: base64 -d payload.txt, base64 --decode payload.txt.
   { match: /\bbase64(?:\.exe)?\b.*(?:-d\b|--decode\b)/i, approval: 'prompt' },
+  // Detects OpenSSL base64 payload decoding.
+  // Example: openssl base64 -d -in payload.txt.
   { match: /\bopenssl(?:\.exe)?\b.*\bbase64\b.*(?:-d\b|-decode\b)/i, approval: 'prompt' },
 ]
 

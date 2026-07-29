@@ -129,13 +129,7 @@ bash:
     - match: "pwsh.exe *--%*"
       approval: deny
 
-    # Ask: Direct deletion commands (wrapped shells are handled by permission-guard)
-    - match: "rm -rf*"
-      approval: prompt
-    - match: "rm -r*"
-      approval: prompt
-    - match: "rm -f*"
-      approval: prompt
+    # Ask: Direct deletion commands (rm is handled by permission-guard)
     - match: "*rmdir*"
       approval: prompt
     - match: "unlink*"
