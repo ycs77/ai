@@ -54,7 +54,7 @@ Permission rules reduce common and high-impact risks; they are not a complete Sh
 
 ### Protected-path authority
 
-`.omp/agent/hooks/pre/permission-guard.ts` is the primary protected-path boundary. `read`, `write`, `grep`, `edit`, and `bash` extract their supported path candidates and pass each one through the same `decisionForPath()` flow. Every filesystem policy lives in one ordered `FILE_RULES` list; the first matching rule decides that candidate. The YAML Bash patterns are supplemental defense only.
+`.omp/extensions/permission-guard.ts` is the primary protected-path boundary. The project-level Extension listens to `tool_call`; `read`, `write`, `grep`, `edit`, and `bash` extract their supported path candidates and pass each one through the same `decisionForPath()` flow. Every filesystem policy lives in one ordered `FILE_RULES` list; the first matching rule decides that candidate. The YAML Bash patterns are supplemental defense only.
 
 ### Candidate extraction
 
@@ -68,7 +68,7 @@ Permission rules reduce common and high-impact risks; they are not a complete Sh
 
 - Local candidates replace Windows separators and compare case-insensitively.
 - Relative candidates are checked both as provided and after prefixing the effective working directory.
-- The hook intentionally does not lexically collapse `.` or `..`; protected-looking unresolved segments therefore remain conservatively denied.
+- The extension intentionally does not lexically collapse `.` or `..`; protected-looking unresolved segments therefore remain conservatively denied.
 - `secrets`, `.aws`, and `.ssh` match at path-segment boundaries with unrestricted suffixes. This denies `.aws-backup`, `.ssh.example`, and equivalent conservative matches. `.ss` is not protected, and unrelated `.ssl` names remain allowed.
 - Filename expressions use end anchors and final-segment constraints. Protected extensions (`.env`, `.pem`, `.key`, and `.crt`) and filenames containing `credential`, `secret`, or `token` match case-insensitively without treating a parent such as `token-cache/` as a filename match.
 - Protected-directory deny rules precede the `.env.example` allow exception. A basename ending in `.env.example`, regardless of case, is allowed unless an earlier rule protects its path, as with `.ssh/.env.example`. A later suffix such as `.env.example.local` remains denied.

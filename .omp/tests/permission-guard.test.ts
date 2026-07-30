@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import registerPermissionGuard from './permission-guard.ts'
+import registerPermissionGuard from '../extensions/permission-guard.ts'
 
 type ToolInput = Record<string, unknown> | string
 
-type HookContext = {
+type ExtensionContext = {
   cwd: string
   hasUI: boolean
   ui: {
@@ -13,14 +13,14 @@ type HookContext = {
   }
 }
 
-type HookResult = { block?: boolean; reason?: string } | undefined
+type ExtensionResult = { block?: boolean; reason?: string } | undefined
 
 type Handler = (
-  event: { toolName: string; input?: ToolInput },
-  context: HookContext,
-) => HookResult | Promise<HookResult>
+  event: { toolName: string; toolCallId: string; input?: ToolInput },
+  context: ExtensionContext,
+) => ExtensionResult | Promise<ExtensionResult>
 
-type Call = (toolName: string, input?: ToolInput) => Promise<HookResult>
+type Call = (toolName: string, input?: ToolInput) => Promise<ExtensionResult>
 
 function createHarness(options: {
   cwd?: string
@@ -39,7 +39,7 @@ function createHarness(options: {
 
   assert.ok(handler)
 
-  const context: HookContext = {
+  const context: ExtensionContext = {
     cwd: options.cwd ?? 'D:/workspace/project',
     hasUI: options.hasUI ?? false,
     ui: {
@@ -53,7 +53,7 @@ function createHarness(options: {
   return {
     approvalPrompts,
     async call(toolName: string, input: ToolInput = {}) {
-      return handler?.({ toolName, input }, context)
+      return handler?.({ toolName, toolCallId: 'tool-call-1', input }, context)
     },
   }
 }

@@ -1,9 +1,9 @@
 /**
- * Permission Guard Hook (PreToolUse)
+ * Permission Guard Extension
  *
  * Applies declarative protected-path and shell policies to guarded tool calls.
  */
-import type { HookAPI, HookContext } from '@oh-my-pi/pi-coding-agent/extensibility/hooks'
+import type { ExtensionAPI, ExtensionContext } from '@oh-my-pi/pi-coding-agent'
 import { fileURLToPath } from 'node:url'
 
 type Approval = 'allow' | 'deny' | 'prompt'
@@ -258,7 +258,7 @@ function toolPaths(tool: string, input: unknown): string[] {
 async function enforce(
   tool: string,
   decision: Decision,
-  context: HookContext,
+  context: ExtensionContext,
 ) {
   if (decision.approval === 'allow') return
 
@@ -285,7 +285,7 @@ async function checkPaths(
   tool: string,
   paths: string[],
   cwd: string,
-  context: HookContext,
+  context: ExtensionContext,
 ) {
   for (const path of paths) {
     const result = await enforce(tool, decisionForPath(path, cwd), context)
@@ -293,7 +293,7 @@ async function checkPaths(
   }
 }
 
-export default function (pi: HookAPI): void {
+export default function (pi: ExtensionAPI): void {
   pi.on('tool_call', async (event, context) => {
     const tool = event.toolName
     if (!GUARDED_TOOLS.includes(tool)) return
