@@ -1,13 +1,16 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import registerPermissionGuard from '../extensions/permission-guard.ts'
+import registerPermissionGuard, { type PermissionRequestEvent } from '../extensions/permission-guard.ts'
 
 type ToolInput = Record<string, unknown> | string
 
 type ExtensionContext = {
   cwd: string
   hasUI: boolean
+  sessionManager: {
+    getSessionId: () => string
+  }
   ui: {
     select: (title: string, options: string[]) => Promise<string | undefined>
   }
@@ -26,14 +29,23 @@ function createHarness(options: {
   cwd?: string
   hasUI?: boolean
   approvalChoice?: 'Approve' | 'Deny'
+  sessionId?: string
 } = {}) {
   let handler: Handler | undefined
+  const activity: string[] = []
   const approvalPrompts: Array<{ title: string; options: string[] }> = []
+  const permissionRequests: Array<{ channel: string; data: unknown }> = []
 
   registerPermissionGuard({
     on(event: string, callback: Handler) {
       assert.equal(event, 'tool_call')
       handler = callback
+    },
+    events: {
+      emit(channel: string, data: unknown) {
+        activity.push(`event:${channel}`)
+        permissionRequests.push({ channel, data })
+      },
     },
   } as never)
 
@@ -42,8 +54,12 @@ function createHarness(options: {
   const context: ExtensionContext = {
     cwd: options.cwd ?? 'D:/workspace/project',
     hasUI: options.hasUI ?? false,
+    sessionManager: {
+      getSessionId: () => options.sessionId ?? 'session-1',
+    },
     ui: {
       async select(title, choices) {
+        activity.push('ui:select')
         approvalPrompts.push({ title, options: choices })
         return options.approvalChoice
       },
@@ -51,7 +67,9 @@ function createHarness(options: {
   }
 
   return {
+    activity,
     approvalPrompts,
+    permissionRequests,
     async call(toolName: string, input: ToolInput = {}) {
       return handler?.({ toolName, toolCallId: 'tool-call-1', input }, context)
     },
@@ -505,6 +523,36 @@ test('dynamic shell syntax prompts once and respects the UI decision', async () 
   const allowed = createHarness({ hasUI: true, approvalChoice: 'Approve' })
   await assertAllowed(allowed.call, 'bash', { command: 'cat "$TARGET_PATH"' })
   assert.equal(allowed.approvalPrompts.length, 1)
+})
+
+test('interactive prompts emit permission_request before opening the selector', async () => {
+  const harness = createHarness({
+    hasUI: true,
+    approvalChoice: 'Approve',
+    sessionId: 'session-42',
+  })
+
+  await assertAllowed(harness.call, 'bash', { command: 'cat "$TARGET_PATH"' })
+
+  assert.deepEqual(harness.activity, [
+    'event:permission_request',
+    'ui:select',
+  ])
+  assert.equal(harness.permissionRequests.length, 1)
+
+  const [request] = harness.permissionRequests
+  assert.equal(request.channel, 'permission_request')
+
+  const data = request.data as PermissionRequestEvent
+  assert.equal(data.sessionId, 'session-42')
+  assert.equal(data.toolCallId, 'tool-call-1')
+  assert.equal(data.toolName, 'bash')
+  assert.match(data.reason ?? '', /^shell pattern /)
+  assert.equal('command' in data, false)
+
+  const headless = createHarness()
+  await assertBlocked(headless.call, 'bash', { command: 'cat "$TARGET_PATH"' })
+  assert.equal(headless.permissionRequests.length, 0)
 })
 
 test('literal path denials take precedence over shell approval', async () => {

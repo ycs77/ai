@@ -8,6 +8,13 @@ import { fileURLToPath } from 'node:url'
 
 type Approval = 'allow' | 'deny' | 'prompt'
 
+export interface PermissionRequestEvent {
+  sessionId: string
+  toolCallId: string
+  toolName: string
+  reason?: string
+}
+
 interface PermissionRule {
   match: RegExp
   approval: Approval
@@ -259,6 +266,8 @@ async function enforce(
   tool: string,
   decision: Decision,
   context: ExtensionContext,
+  toolCallId: string,
+  events: ExtensionAPI['events'],
 ) {
   if (decision.approval === 'allow') return
 
@@ -274,6 +283,13 @@ async function enforce(
     lines.push(`Reason: ${decision.reason}`)
   }
 
+  events.emit('permission_request', {
+    sessionId: context.sessionManager.getSessionId(),
+    toolCallId,
+    toolName: tool,
+    ...(decision.reason ? { reason: decision.reason } : {}),
+  } satisfies PermissionRequestEvent)
+
   const choice = await context.ui.select(
     lines.join('\n'),
     ['Approve', 'Deny'],
@@ -286,9 +302,17 @@ async function checkPaths(
   paths: string[],
   cwd: string,
   context: ExtensionContext,
+  toolCallId: string,
+  events: ExtensionAPI['events'],
 ) {
   for (const path of paths) {
-    const result = await enforce(tool, decisionForPath(path, cwd), context)
+    const result = await enforce(
+      tool,
+      decisionForPath(path, cwd),
+      context,
+      toolCallId,
+      events,
+    )
     if (result) return result
   }
 }
@@ -310,6 +334,8 @@ export default function (pi: ExtensionAPI): void {
         tool === 'read' ? paths.map(stripReadSelectors) : paths,
         context.cwd,
         context,
+        event.toolCallId,
+        pi.events,
       )
     }
 
@@ -325,14 +351,21 @@ export default function (pi: ExtensionAPI): void {
       ...command.split(SHELL_SEPARATOR_RE).filter(Boolean),
     ]
 
-    const blocked = await checkPaths(tool, paths, cwd, context)
+    const blocked = await checkPaths(
+      tool,
+      paths,
+      cwd,
+      context,
+      event.toolCallId,
+      pi.events,
+    )
     if (blocked) return blocked
     const shellRule = matchingRule(command, SHELL_RULES)
     if (shellRule) {
       return enforce(tool, {
         approval: shellRule.approval,
         reason: `shell pattern ${shellRule.match.source}`,
-      }, context)
+      }, context, event.toolCallId, pi.events)
     }
   })
 }

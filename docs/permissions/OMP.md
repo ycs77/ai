@@ -56,6 +56,8 @@ Permission rules reduce common and high-impact risks; they are not a complete Sh
 
 `.omp/extensions/permission-guard.ts` is the primary protected-path boundary. The project-level Extension listens to `tool_call`; `read`, `write`, `grep`, `edit`, and `bash` extract their supported path candidates and pass each one through the same `decisionForPath()` flow. Every filesystem policy lives in one ordered `FILE_RULES` list; the first matching rule decides that candidate. The YAML Bash patterns are supplemental defense only.
 
+When an interactive policy requires confirmation, the Extension emits the custom `permission_request` channel immediately before opening `ui.select()`. Its payload contains `sessionId`, `toolCallId`, `toolName`, and the matched policy `reason` when present; it never includes raw tool input. The channel is notification-only, and the guard intentionally does not emit a resolved event.
+
 ### Candidate extraction
 
 - `read` and `write` inspect `path`.
