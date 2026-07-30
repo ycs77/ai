@@ -54,6 +54,8 @@
 ### 常見 CLI 工具
 
 - 版本控制操作使用 `git`
+- 所有 Git 操作都必須透過 Bash 工具直接執行 `git` CLI
+- 禁止透過 Eval、JavaScript、Bun、Node.js、Python 或臨時程式碼間接包裝或呼叫 Git 指令
 - GitHub 相關操作優先使用 `gh` CLI
 
 ## 安全
