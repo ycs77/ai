@@ -317,7 +317,7 @@ async function checkPaths(
   }
 }
 
-export default function (pi: ExtensionAPI): void {
+export default function (pi: ExtensionAPI) {
   pi.on('tool_call', async (event, context) => {
     const tool = event.toolName
     if (!GUARDED_TOOLS.includes(tool)) return
