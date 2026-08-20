@@ -17,6 +17,8 @@ symbolPreset: unicode
 theme:
   dark: titanium
   light: light
+composer:
+  shape: claude
 
 # Tools Approval
 # write = auto-approve read/write tiers; exec requires prompt
