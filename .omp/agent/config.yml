@@ -252,4 +252,4 @@ bash:
 # Auto QA
 dev:
   autoqa: false
-  autoqaConsent: "denied"
+  autoqaConsent: denied
