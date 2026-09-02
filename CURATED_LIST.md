@@ -17,6 +17,7 @@
 - [UI UX Pro Max](https://ui-ux-pro-max-skill.nextlevelbuilder.io/) - 通常在於想要讓整個多頁面的前端專案，想要保持一致性的設計時使用
 - [ui.sh](https://ui.sh/) - 通常在 Tailwind CSS 的專案中使用，現在還是早期測試階段，還需要觀望觀望
 - [Taste Skill](https://github.com/Leonxlnx/taste-skill) - 通常用於一次性的前端專案，想要快速產出一個有設計感的前端畫面時使用。可以選擇極簡、柔軟、粗曠等不同風格的設計，建構出具有恰當動畫、合理間距和出色視覺效果的現代優質設計
+- [Hallmark](https://github.com/Nutlope/hallmark) - Together AI 出品、拒絕產生「AI 味」設計的 skill，通常用於一次性前端專案。會依 brief 挑選巨觀結構並套用 21 種主題之一，產出前先跑 57 道 slop 檢查與自我審視，也支援 `audit`（為既有程式碼評分）、`redesign`（保留文案與資訊架構、換一種結構重做）和 `study`（從截圖或網址萃取喜歡的設計 DNA）等用法
 
 ### Write
 
