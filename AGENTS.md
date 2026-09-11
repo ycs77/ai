@@ -1,4 +1,4 @@
-# 重點指南
+# 協作規範
 
 ## 使用者介紹
 
@@ -30,10 +30,13 @@
 ### JavaScript / TypeScript
 
 - 優先使用專案既有的 Node.js 版本設定與套件管理器
-- 專案未指定 Node.js 版本管理方式時，使用 nvm
 - 專案未指定套件管理器且不存在 lockfile 時，使用 npm
 - 需要執行專案套件提供的 CLI 時，使用專案既有套件管理器對應的執行方式；使用 npm 時使用 npx
 - 不得擅自更換套件管理器、刪除 lockfile 或產生不同格式的 lockfile
+- TypeScript 格式規則
+  - 陣列型別優先使用 `T[]`，避免使用 `Array<T>`
+  - 字典型物件優先使用 `Record<string, T>`，避免使用 `{ [key: string]: T }`
+- Vue 3 程式碼變更前，先讀取 `/ycs77-vue` skill
 
 ### Python
 
@@ -42,9 +45,9 @@
 
 ### PHP
 
-- 優先使用專案既有的 PHP 執行環境與 Composer scripts
 - 專案使用 Laravel Sail、Docker 或其他封裝環境時，應透過該環境執行 PHP、Artisan、Composer 與測試指令
 - 專案未指定執行環境時，使用 `php` 執行，並使用 `composer` 管理套件
+- 優先使用專案既有的 Composer scripts
 
 ### Docker
 
@@ -54,7 +57,7 @@
 ### 常見 CLI 工具
 
 - 版本控制操作使用 `git`
-- 所有 Git 操作都必須透過 Bash 工具直接執行 `git` CLI
+- 所有 Git 操作都必須直接執行 `git` CLI
 - 禁止透過 Eval、JavaScript、Bun、Node.js、Python 或臨時程式碼間接包裝或呼叫 Git 指令
 - GitHub 相關操作優先使用 `gh` CLI
 

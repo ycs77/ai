@@ -6,7 +6,7 @@
 - `~/.codex/AGENTS.md`
 - `~/.config/opencode/AGENTS.md`
 - `~/.gemini/GEMINI.md`
-- `~/.omp/AGENTS.md`
+- `~/.omp/agent/AGENTS.md`
 
 ## Configuration for Operating System
 
