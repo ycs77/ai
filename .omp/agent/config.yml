@@ -3,13 +3,12 @@ setupVersion: 2
 # Basic
 modelRoles:
   # default: opencode-go/glm-5.2:high
-  # smol: opencode-go/glm-5.2:minimal
-  # slow: opencode-go/glm-5.2:max
-  # plan: opencode-go/glm-5.2:max
-  default: openai-codex/gpt-5.6-terra:high
-  smol: openai-codex/gpt-5.6-luna:high
-  slow: openai-codex/gpt-5.6-sol:max
-  plan: openai-codex/gpt-5.6-sol:max
+  # smol: opencode-go/glm-5.3-flash:low
+  # slow: opencode-go/glm-5.3:max
+  # vision: opencode-go/glm-5.3-flash:high
+  default: openai-codex/gpt-6-sol:medium
+  smol: openai-codex/gpt-6-luna:low
+  slow: openai-codex/gpt-6-sol:max
 symbolPreset: unicode
 # shellPath: C:\Program Files\Git\bin\bash.exe
 
