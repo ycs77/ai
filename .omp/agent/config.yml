@@ -197,39 +197,35 @@ bash:
       approval: prompt
 
     # Ask: Package install / remove (supply-chain risk)
-    - match: "npm install*"
+    - match: "npm install *"
       approval: prompt
     - match: "npm i *"
       approval: prompt
-    - match: "npm ci*"
-      approval: prompt
-    - match: "npm uninstall*"
+    - match: "npm uninstall *"
       approval: prompt
     - match: "npm rm *"
       approval: prompt
-    - match: "yarn"
+    - match: "yarn install *"
       approval: prompt
-    - match: "yarn install*"
+    - match: "yarn add *"
       approval: prompt
-    - match: "yarn add*"
-      approval: prompt
-    - match: "pnpm install*"
+    - match: "pnpm install *"
       approval: prompt
     - match: "pnpm i *"
       approval: prompt
-    - match: "pnpm uninstall*"
+    - match: "pnpm uninstall *"
       approval: prompt
-    - match: "pip install*"
+    - match: "pip install *"
       approval: prompt
-    - match: "pip3 install*"
+    - match: "pip3 install *"
       approval: prompt
-    - match: "uv add*"
+    - match: "uv add *"
       approval: prompt
-    - match: "uv pip install*"
+    - match: "uv pip install *"
       approval: prompt
-    - match: "composer require*"
+    - match: "composer require *"
       approval: prompt
-    - match: "composer install*"
+    - match: "composer install *"
       approval: prompt
     - match: "composer update*"
       approval: prompt
@@ -237,11 +233,11 @@ bash:
     # Ask: Docker data loss
     - match: "docker system prune*"
       approval: prompt
-    - match: "docker volume rm*"
+    - match: "docker volume rm *"
       approval: prompt
-    - match: "docker rmi*"
+    - match: "docker rmi *"
       approval: prompt
-    - match: "docker rm*"
+    - match: "docker rm *"
       approval: prompt
 
     # Catch-all: allow everything else (first-match wins, must be last)
