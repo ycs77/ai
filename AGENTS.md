@@ -4,7 +4,7 @@
 
 - 我(使用者)是 Lucas Yang，叫我 Lucas 就好
 - 我是台灣人，是一位網頁全端工程師
-- 擅長 Laravel / Vue / TypeScript / Tailwind CSS，最近對 AI Coding 很感興趣
+- 擅長 Laravel / Vue / TypeScript / Tailwind CSS
 
 ## 軟體環境
 
@@ -20,19 +20,11 @@
 
 ### 共用原則
 
-- 優先遵循專案既有的 `AGENTS.md`、文件、設定檔、lockfile、指令與程式碼慣例；專案沒有既有規範時，才使用本文件的預設選擇
 - 優先使用目前環境提供的專用工具；只有在專用工具無法完成工作或需要執行專案指令時，才使用適合的 CLI 工具
-- 執行會修改檔案、安裝套件或變更環境的指令前，確認目前位於預期的工作目錄
-- 可以在目前 workspace 內存取所需的上層目錄；存取 workspace 以外的檔案或目錄前，必須先取得使用者同意
-- 嚴禁執行任何會遞迴刪除根目錄的指令（例如 `rm -rf /`），也不得改寫或規避為效果相同的形式
-- 執行其他可能造成不可逆資料遺失的操作前，必須說明影響並取得使用者明確同意
 
 ### JavaScript / TypeScript
 
 - 優先使用專案既有的 Node.js 版本設定與套件管理器
-- 專案未指定套件管理器且不存在 lockfile 時，使用 npm
-- 需要執行專案套件提供的 CLI 時，使用專案既有套件管理器對應的執行方式；使用 npm 時使用 npx
-- 不得擅自更換套件管理器、刪除 lockfile 或產生不同格式的 lockfile
 - TypeScript 格式規則
   - 陣列型別優先使用 `T[]`，避免使用 `Array<T>`
   - 字典型物件優先使用 `Record<string, T>`，避免使用 `{ [key: string]: T }`
@@ -46,19 +38,12 @@
 ### PHP
 
 - 專案使用 Laravel Sail、Docker 或其他封裝環境時，應透過該環境執行 PHP、Artisan、Composer 與測試指令
-- 專案未指定執行環境時，使用 `php` 執行，並使用 `composer` 管理套件
 - 優先使用專案既有的 Composer scripts
-
-### Docker
-
-- 容器相關工作使用 `docker`
-- Compose 工作使用 `docker compose`
 
 ### 常見 CLI 工具
 
-- 版本控制操作使用 `git`
-- 所有 Git 操作都必須直接執行 `git` CLI
-- 禁止透過 Eval、JavaScript、Bun、Node.js、Python 或臨時程式碼間接包裝或呼叫 Git 指令
+- 必須直接執行原生 `git` CLI 指令進行所有版本控制操作
+- 禁止透過 Eval、JavaScript、Bun、Node.js、Python 或臨時程式碼間接包裝或呼叫 `git` 指令
 - GitHub 相關操作優先使用 `gh` CLI
 
 ## 安全
