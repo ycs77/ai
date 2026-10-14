@@ -15,6 +15,16 @@ npx -y skills add ycs77/skills -g \
   -s '*' \
   -y
 
+npx -y skills add nutlope/hallmark -g \
+  -a claude-code \
+  -a codex \
+  -y
+
+npx -y skills add danyuchn/iso-24495-skill -g \
+  -a claude-code \
+  -a codex \
+  -y
+
 rm -rf ~/.gemini/skills
 ln -sfn ../.agents/skills ~/.gemini/skills
 ```
