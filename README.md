@@ -8,16 +8,13 @@ Refernce the [INSTALLATION.md](INSTALLATION.md) file for install general AI tool
 
 ## Common AI Tools
 
-- Claude Code
+- omp
 - Codex CLI
-- OpenCode
+- Claude Code
 
 ## Skills
 
-- [commit-message](https://github.com/ycs77/skills/tree/main/skills/commit-message)
-- [github-release-notes](https://github.com/ycs77/skills/tree/main/skills/github-release-notes)
-- [scan-repo](https://github.com/ycs77/skills/tree/main/skills/scan-repo) - (use in Container)
-- [scan-skill](https://github.com/ycs77/skills/tree/main/skills/scan-skill) - (use in Container)
+See [ycs77/skills](https://github.com/ycs77/skills).
 
 ## MCP Server
 
@@ -25,23 +22,32 @@ Refernce the [INSTALLATION.md](INSTALLATION.md) file for install general AI tool
 | ---- | -------- |
 | [apifable](https://github.com/ycs77/apifable) | Makes it easier to integrate backend APIs in frontend projects |
 
+## omp
+
+- [`.omp/agent/config.yml`](.omp/agent/config.yml) - Configuration for omp
+
+Used omp plugins:
+
+| Repository | Installed Plugins |
+| ---------- | ----------------- |
+| [ycs77/omp-notifications](https://github.com/ycs77/omp-notifications) | `notification-basic-win` |
+| [ycs77/omp-jev-auto-approve](https://github.com/ycs77/omp-jev-auto-approve) | `omp-jev-auto-approve` |
+
+## Codex
+
+- [`.codex/config.toml`](.codex/config.toml) - Configuration for Codex CLI
+
 ## Claude Code
 
 - [`.claude/settings.json`](.claude/settings.json) - Configuration for Claude Code
 - [`.claude/output-styles`](.claude/output-styles) - Custom output styles for Claude Code responses
 
-### Claude Code Plugins
+Used Claude Code plugins:
 
-| Marketplace | Installed Plugins |
-| ----------- | ----------------- |
+| Repository | Installed Plugins |
+| ---------- | ----------------- |
 | [ycs77/claude-code-plugins](https://github.com/ycs77/claude-code-plugins) | `ycs77` |
 | [ycs77/claude-code-notifications](https://github.com/ycs77/claude-code-notifications) | `notification-basic-win` |
-
-### Claude Code Tools
-
-| Name |
-| ---- |
-| [ycs77/claude-code-session-heartbeat](https://github.com/ycs77/claude-code-session-heartbeat) |
 
 ## OpenCode
 

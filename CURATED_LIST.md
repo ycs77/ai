@@ -1,46 +1,46 @@
-## 精選列表
+# Curated List
 
-### Think
+## Workflow
 
-> [!NOTE]
-> 尚未測試和比較評估過...
+- [mattpocock/skills](https://github.com/mattpocock/skills)
+
+## Think
 
 - [idea-refine](https://github.com/addyosmani/agent-skills/blob/main/skills/idea-refine/SKILL.md)
-- [grill-me](https://github.com/mattpocock/skills/blob/main/grill-me/SKILL.md)
 - [think](https://github.com/tw93/Waza/blob/main/skills/think/SKILL.md)
 - [improve](https://github.com/shadcn/improve)
 
-### Design
+## Design
 
-- [frontend-design](https://github.com/anthropics/claude-code/blob/main/plugins/frontend-design/skills/frontend-design/SKILL.md) - 通常用於一次性的前端專案，想要快速產出一個有設計感的前端畫面時使用
+- [Hallmark](https://github.com/Nutlope/hallmark) - 拒絕產生「AI 味」設計的 skill，通常用於一次性前端專案。會依 brief 挑選巨觀結構並套用 21 種主題之一，產出前先跑 57 道 slop 檢查與自我審視，也支援 `audit`（為既有程式碼評分）、`redesign`（保留文案與資訊架構、換一種結構重做）和 `study`（從截圖或網址萃取喜歡的設計 DNA）等用法
 - [Impeccable](https://impeccable.style/) - 通常在想要讓 AI 設計師來協助優化前端設計時使用
+- [frontend-design](https://github.com/anthropics/claude-code/blob/main/plugins/frontend-design/skills/frontend-design/SKILL.md) - 通常用於一次性的前端專案，想要快速產出一個有設計感的前端畫面時使用
 - [UI UX Pro Max](https://ui-ux-pro-max-skill.nextlevelbuilder.io/) - 通常在於想要讓整個多頁面的前端專案，想要保持一致性的設計時使用
-- [ui.sh](https://ui.sh/) - 通常在 Tailwind CSS 的專案中使用，現在還是早期測試階段，還需要觀望觀望
 - [Taste Skill](https://github.com/Leonxlnx/taste-skill) - 通常用於一次性的前端專案，想要快速產出一個有設計感的前端畫面時使用。可以選擇極簡、柔軟、粗曠等不同風格的設計，建構出具有恰當動畫、合理間距和出色視覺效果的現代優質設計
-- [Hallmark](https://github.com/Nutlope/hallmark) - Together AI 出品、拒絕產生「AI 味」設計的 skill，通常用於一次性前端專案。會依 brief 挑選巨觀結構並套用 21 種主題之一，產出前先跑 57 道 slop 檢查與自我審視，也支援 `audit`（為既有程式碼評分）、`redesign`（保留文案與資訊架構、換一種結構重做）和 `study`（從截圖或網址萃取喜歡的設計 DNA）等用法
 
-### Write
+## Writing
 
 - [write-social-post](https://github.com/ycs77/skills/blob/main/skills/write-social-post/SKILL.md)
+- [iso-24495-skill](https://github.com/danyuchn/iso-24495-skill)
 - [speak-human-tw](https://github.com/Raymondhou0917/speak-human-tw)
 
-### Investment
+## Investment
 
 - [AI Berkshire](https://github.com/xbtlin/ai-berkshire)
 
-### Audit
+## Audit
 
 - [scan-repo](https://github.com/ycs77/skills/blob/main/skills/scan-repo/SKILL.md)
 - [scan-skill](https://github.com/ycs77/skills/blob/main/skills/scan-skill/SKILL.md)
 
-### Automation
+## Automation
 
 - [OpenCLI](https://github.com/jackwener/OpenCLI)
 
-### Docker & Container
+## Docker & Container
 
 - [HolyClaude](https://github.com/ycs77/HolyClaude) - Lucas fork 的 HolyClaude 版本，用於在 Container 中讓 AI Agent 可以長期執行任務
 
-## Posts
+## 參考學習資料
 
 - [你不知道的 AI Coding：非技术人的上手、场景与实战](https://tw93.fun/2026-04-26/ai-coding.html)
