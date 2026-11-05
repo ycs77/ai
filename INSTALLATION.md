@@ -25,6 +25,11 @@ npx -y skills add danyuchn/iso-24495-skill -g \
   -a codex \
   -y
 
+npx -y skills add tw93/kami -g \
+  -a claude-code \
+  -a codex \
+  -y
+
 rm -rf ~/.gemini/skills
 ln -sfn ../.agents/skills ~/.gemini/skills
 ```
