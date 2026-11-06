@@ -34,6 +34,26 @@ rm -rf ~/.gemini/skills
 ln -sfn ../.agents/skills ~/.gemini/skills
 ```
 
+### Install omp
+
+For Bash (Linux/macOS):
+
+```bash
+curl -fsSL https://omp.sh/install | sh
+```
+
+For PowerShell (Windows):
+
+```bash
+irm https://omp.sh/install.ps1 | iex
+```
+
+Install TypeScript language server:
+
+```bash
+npm install -g typescript-language-server typescript@6
+```
+
 ### Install Claude Code
 
 For Bash (Linux/macOS):
