@@ -14,7 +14,6 @@ modelRoles:
 advisor:
   enabled: true
 symbolPreset: unicode
-# shellPath: C:\Program Files\Git\bin\bash.exe
 
 # Theme
 theme:
