@@ -2,15 +2,15 @@ setupVersion: 3
 
 # Basic
 modelRoles:
-  default: openai-codex/gpt-6-sol:medium
+  default: openai-codex/gpt-6.1-sol:medium
   smol: openai-codex/gpt-6-luna:low
-  slow: openai-codex/gpt-6-sol:max
+  slow: openai-codex/gpt-6.1-sol:high
   # advisor: opencode-zen/claude-opus-5-5
   # default: opencode-go/glm-5.2:high
   # smol: opencode-go/glm-5.3-flash:low
   # slow: opencode-go/glm-5.3:max
   # vision: opencode-go/glm-5.3-flash:high
-  # advisor: openai-codex/gpt-6-sol:medium
+  # advisor: openai-codex/gpt-6.1-sol:medium
 # advisor:
 #   enabled: true
 symbolPreset: unicode
