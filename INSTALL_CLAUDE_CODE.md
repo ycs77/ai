@@ -1,48 +1,4 @@
-# AI Installation Guide
-
-### Install AI Tools
-
-```bash
-npm install -g @openai/codex@latest
-```
-
-### Install Skills
-
-```bash
-npx -y skills add ycs77/skills -g \
-  -a codex \
-  -s '*' \
-  -y
-
-npx -y skills add nutlope/hallmark -g -a codex -y
-npx -y skills add danyuchn/iso-24495-skill -g -a codex -y
-npx -y skills add tw93/kami -g -a codex -y
-
-rm -rf ~/.gemini/skills
-ln -sfn ../.agents/skills ~/.gemini/skills
-```
-
-### Install omp
-
-For Bash (Linux/macOS):
-
-```bash
-curl -fsSL https://omp.sh/install | sh
-```
-
-For PowerShell (Windows):
-
-```bash
-irm https://omp.sh/install.ps1 | iex
-```
-
-Install TypeScript language server:
-
-```bash
-npm install -g typescript-language-server typescript@6
-```
-
-### Install Claude Code
+# Install Claude Code
 
 For Bash (Linux/macOS):
 
@@ -58,7 +14,7 @@ irm https://claude.ai/install.ps1 | iex
 
 Next, set the `CLAUDE_CODE_GIT_BASH_PATH` environment variable to the location of your Git Bash executable, which is usually `C:\Program Files\git\bin\bash.exe`.
 
-### Setup Claude Code Status Line
+## Setup Claude Code Status Line
 
 First, you must install `jq`. **Run Git Bash as Administrator** for this step:
 
@@ -85,7 +41,7 @@ Then, add the following Claude Code configuration to display the status line:
 }
 ```
 
-### Setup Claude Code Sandbox
+## Setup Claude Code Sandbox
 
 Enable the sandbox feature in Claude Code settings:
 
