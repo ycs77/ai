@@ -1,4 +1,4 @@
-setupVersion: 2
+setupVersion: 3
 
 # Basic
 modelRoles:
@@ -22,6 +22,15 @@ theme:
   light: light
 composer:
   shape: claude
+
+# Auto update
+update:
+  auto: false
+
+# Auto QA
+dev:
+  autoqa: false
+  autoqaConsent: denied
 
 bash:
   patterns:
@@ -88,8 +97,3 @@ bash:
       approval: prompt
     - match: "docker rm *"
       approval: prompt
-
-# Auto QA
-dev:
-  autoqa: false
-  autoqaConsent: denied
