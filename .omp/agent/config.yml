@@ -7,31 +7,34 @@ modelRoles:
   slow: openai-codex/gpt-6.1-sol:high
   # advisor: opencode-zen/claude-opus-5-5
 modelPresets:
-  codex:
+  1-gpt-sol:
     modelRoles:
       default: openai-codex/gpt-6.1-sol:medium
       smol: openai-codex/gpt-6-luna:low
       slow: openai-codex/gpt-6.1-sol:high
       # advisor: opencode-zen/claude-opus-5-5
-  claude:
+  2-gpt-luna:
+    modelRoles:
+      default: openai-codex/gpt-6-luna:max
+  3-claude-opus:
     modelRoles:
       default: opencode-zen/claude-opus-5-5:medium
       smol: opencode-zen/claude-haiku-5-5:low
       slow: opencode-zen/claude-opus-5-5:max
-  gemini3:
+  4-gemini3:
     modelRoles:
       default: opencode-zen/gemini-3.8-flash:medium
-  gemini4:
+  5-gemini4:
     modelRoles:
       default: opencode-go/gemini-4-argon:medium
       smol: opencode-zen/gemini-3.8-flash:low
       slow: opencode-go/gemini-4-argon:high
-  glm:
+  6-glm:
     modelRoles:
       default: opencode-go/glm-5.3:high
       smol: opencode-go/glm-5.3-flash:low
       slow: opencode-go/glm-5.3:max
-  kimi:
+  7-kimi:
     modelRoles:
       default: opencode-go/kimi-k3
 # advisor:
