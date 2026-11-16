@@ -15,7 +15,7 @@ modelPresets:
       # advisor: opencode-zen/claude-opus-5-5
   2-gpt-luna:
     modelRoles:
-      default: openai-codex/gpt-6-luna:max
+      default: openai-codex/gpt-6-luna:high
   3-claude-opus:
     modelRoles:
       default: opencode-zen/claude-opus-5-5:medium
