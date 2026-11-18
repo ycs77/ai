@@ -16,19 +16,19 @@ modelPresets:
   2-gpt-luna:
     modelRoles:
       default: openai-codex/gpt-6-luna:high
-  3-claude-opus:
-    modelRoles:
-      default: opencode-zen/claude-opus-5-5:medium
-      smol: opencode-zen/claude-haiku-5-5:low
-      slow: opencode-zen/claude-opus-5-5:max
-  4-gemini3:
+  3-gemini3:
     modelRoles:
       default: opencode-zen/gemini-3.8-flash:medium
-  5-gemini4:
+  4-gemini4:
     modelRoles:
       default: opencode-go/gemini-4-argon:medium
       smol: opencode-zen/gemini-3.8-flash:low
       slow: opencode-go/gemini-4-argon:high
+  5-claude-opus:
+    modelRoles:
+      default: opencode-zen/claude-opus-5-5:medium
+      smol: opencode-zen/claude-haiku-5-5:low
+      slow: opencode-zen/claude-opus-5-5:max
   6-glm:
     modelRoles:
       default: opencode-go/glm-5.3:high
@@ -59,6 +59,5 @@ dev:
 
 bash:
   patterns:
-    # Ask: Git destructive / external
     - match: "git commit *"
       approval: prompt
