@@ -48,6 +48,12 @@ theme:
 composer:
   shape: claude
 
+# Tools
+generate_image:
+  enabled: true
+github:
+  enabled: true
+
 # Auto update
 update:
   auto: false
