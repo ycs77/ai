@@ -15,6 +15,10 @@
 - 使用繁體中文台灣用語；嚴禁使用簡體字，或是繁體字但中國大陸用語
 - 用詞要口語、自然，避免生硬或翻譯腔的詞彙；例如「根因」改用「原因」、「根本原因」、「主要原因」
 
+## 互動
+
+- 執行 `/grill-me`、`/grill-with-docs` 等訪談或釐清類 skill 與流程時，優先使用互動式提問工具（如 `ask`、`ask_question`、`AskUserQuestion` 等）向使用者提問
+
 ## 開發規範
 
 ### JavaScript / TypeScript
