@@ -13,7 +13,7 @@
 For Windows:
 
 ```md
-## 軟體環境
+## 系統環境
 
 - 系統為 Windows 11
 ```
@@ -21,7 +21,7 @@ For Windows:
 For WSL2:
 
 ```md
-## 軟體環境
+## 系統環境
 
 - 系統為 Windows 11，環境為 WSL2 Ubuntu 24.04
 ```
